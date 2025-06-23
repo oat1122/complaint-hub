@@ -52,13 +52,12 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
       setIsLoading(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading statistics...</p>
+          <p className="mt-4 text-gray-600">กำลังโหลดสถิติ...</p>
         </div>
       </div>
     );
@@ -67,17 +66,17 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-        <p className="font-medium">Error loading statistics</p>
+        <p className="font-medium">เกิดข้อผิดพลาดในการโหลดสถิติ</p>
         <p>{error}</p>
         <Button onClick={fetchStats} className="mt-2">
-          Retry
+          ลองใหม่
         </Button>
       </div>
     );
   }
 
   if (!stats) {
-    return <div>No statistics available</div>;
+    return <div>ไม่มีข้อมูลสถิติ</div>;
   }
 
   // Prepare data for charts

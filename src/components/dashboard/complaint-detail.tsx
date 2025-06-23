@@ -15,16 +15,16 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isAdmin = session?.user?.role === "admin";
-
   if (!complaint) {
     return (
       <div className="text-center py-10">
-        <p className="text-xl text-gray-600">Complaint not found</p>
+        <p className="text-xl text-gray-600">ไม่พบคำร้องเรียน</p>
         <Button
           onClick={() => router.push("/dashboard/complaints")}
+          variant="secondary"
           className="mt-4"
         >
-          Back to Complaints
+          กลับไปยังคำร้องเรียน
         </Button>
       </div>
     );
@@ -32,10 +32,9 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
 
   const handleDelete = async () => {
     if (!isAdmin) return;
-
     if (
       !window.confirm(
-        "Are you sure you want to delete this complaint? This action cannot be undone."
+        "คุณแน่ใจหรือไม่ว่าต้องการลบคำร้องเรียนนี้? การกระทำนี้ไม่สามารถย้อนกลับได้"
       )
     ) {
       return;

@@ -63,14 +63,13 @@ export default async function Dashboard() {
         totalComplaints > 0 ? totalAttachments / totalComplaints : 0,
     },
   };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-2xl font-bold">แดชบอร์ด</h1>
         {role === "viewer" && (
           <div className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-md text-sm font-semibold">
-            Read-Only Mode
+            โหมดดูอย่างเดียว
           </div>
         )}
       </div>

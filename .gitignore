@@ -39,3 +39,43 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# uploads (ไม่ให้รูปภาพขึ้น git)
+/uploads/
+/public/uploads/
+/storage/uploads/
+
+# image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+*.ico
+*.bmp
+*.tiff
+
+# video files
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+
+# audio files
+*.mp3
+*.wav
+*.flac
+*.aac
+
+# document files
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+
+# keep folder structure but ignore contents
+!uploads/.gitkeep
+!public/uploads/.gitkeep

@@ -29,25 +29,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navItems = [
     {
-      name: "Dashboard",
+      name: "แดชบอร์ด",
       href: "/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
       roles: ["admin", "viewer"],
     },
     {
-      name: "Complaints",
+      name: "คำร้องเรียน",
       href: "/dashboard/complaints",
       icon: <FileText className="h-5 w-5" />,
       roles: ["admin", "viewer"],
     },
     {
-      name: "Statistics",
+      name: "สถิติ",
       href: "/dashboard/statistics",
       icon: <BarChart4 className="h-5 w-5" />,
       roles: ["admin", "viewer"],
     },
     {
-      name: "Settings",
+      name: "ตั้งค่า",
       href: "/dashboard/settings",
       icon: <Settings className="h-5 w-5" />,
       roles: ["admin"],
@@ -169,15 +169,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <div className="h-9 w-9 rounded-full bg-primary-200 flex items-center justify-center">
                       <User className="h-5 w-5 text-primary-600" />
                     </div>
-                  </div>
+                  </div>{" "}
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-700">
-                      {session?.user?.name || "User"}
+                      {session?.user?.name || "ผู้ใช้งาน"}
                     </p>
                     <p className="text-xs font-medium text-gray-500">
                       {session?.user?.role === "admin"
-                        ? "Administrator"
-                        : "View Only"}
+                        ? "ผู้ดูแลระบบ"
+                        : "สิทธิ์ดูอย่างเดียว"}
                     </p>
                   </div>
                 </div>
@@ -204,17 +204,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
           <div className="flex-1 px-4 flex justify-between">
             <div className="flex-1 flex justify-between items-center">
+              {" "}
               {!isAdmin && (
                 <div className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs font-semibold">
-                  Read-Only Mode
+                  โหมดดูอย่างเดียว
                 </div>
-              )}
+              )}{" "}
               <div className="ml-4 flex items-center md:ml-6">
                 <button
                   className="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   onClick={() => signOut({ callbackUrl: "/" })}
                 >
-                  <span className="sr-only">Sign out</span>
+                  <span className="sr-only">ออกจากระบบ</span>
                   <LogOut className="h-6 w-6" />
                 </button>
               </div>

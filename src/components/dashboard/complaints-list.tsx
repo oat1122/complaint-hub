@@ -56,14 +56,14 @@ export default function ComplaintsList({
 
       const response = await fetch(`/api/complaints?${queryParams.toString()}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch complaints");
+        throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
       }
 
       const data = await response.json();
       setComplaints(data.complaints);
       setPagination(data.pagination);
     } catch (error: any) {
-      setError(error.message || "An error occurred while fetching complaints");
+      setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +101,7 @@ export default function ComplaintsList({
 
     if (
       !window.confirm(
-        "Are you sure you want to delete this complaint? This action cannot be undone."
+        "คุณแน่ใจหรือไม่ว่าต้องการลบคำร้องเรียนนี้? การกระทำนี้ไม่สามารถย้อนกลับได้"
       )
     ) {
       return;
@@ -113,19 +113,19 @@ export default function ComplaintsList({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete complaint");
+        throw new Error("ไม่สามารถลบคำร้องเรียนได้");
       }
 
       // Refresh the list
       fetchComplaints(pagination.page);
     } catch (error: any) {
-      alert(`Error: ${error.message || "Failed to delete complaint"}`);
+      alert(`ข้อผิดพลาด: ${error.message || "ไม่สามารถลบคำร้องเรียนได้"}`);
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
+    return date.toLocaleString("th-TH", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -136,13 +136,13 @@ export default function ComplaintsList({
 
   const getCategoryLabel = (category: string) => {
     const categories: Record<string, string> = {
-      technical: "Technical Issues",
-      environment: "Environment",
-      hr: "Human Resources",
-      equipment: "Equipment",
-      safety: "Safety & Security",
-      financial: "Financial",
-      others: "Others",
+      technical: "ปัญหาทางเทคนิค",
+      environment: "สิ่งแวดล้อม",
+      hr: "ทรัพยากรบุคคล",
+      equipment: "อุปกรณ์",
+      safety: "ความปลอดภัยและความมั่นคง",
+      financial: "การเงิน",
+      others: "อื่นๆ",
     };
     return categories[category] || category;
   };
@@ -167,7 +167,7 @@ export default function ComplaintsList({
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-300 border-t-primary-600 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading complaints...</p>
+          <p className="mt-4 text-gray-600">กำลังโหลดคำร้องเรียน...</p>
         </div>
       </div>
     );
@@ -176,13 +176,14 @@ export default function ComplaintsList({
   if (error && !complaints.length) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-        <p className="font-medium">Error loading complaints</p>
-        <p>{error}</p>
+        <p className="font-medium">เกิดข้อผิดพลาดในการโหลดคำร้องเรียน</p>
+        <p>{error}</p>{" "}
         <Button
           onClick={() => fetchComplaints(pagination.page)}
+          variant="secondary"
           className="mt-2"
         >
-          Retry
+          ลองอีกครั้ง
         </Button>
       </div>
     );
@@ -192,30 +193,30 @@ export default function ComplaintsList({
     <div className="space-y-6">
       {/* Filter Panel */}
       <div className="bg-white p-4 rounded-lg shadow-sm">
-        <h3 className="text-lg font-medium mb-4">Filter Complaints</h3>
+        <h3 className="text-lg font-medium mb-4">ตัวกรองคำร้องเรียน</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label
               htmlFor="category"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Category
+              หมวดหมู่
             </label>
             <select
               id="category"
               name="category"
               value={filters.category}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
             >
-              <option value="">All Categories</option>
-              <option value="technical">Technical Issues</option>
-              <option value="environment">Environment</option>
-              <option value="hr">Human Resources</option>
-              <option value="equipment">Equipment</option>
-              <option value="safety">Safety & Security</option>
-              <option value="financial">Financial</option>
-              <option value="others">Others</option>
+              <option value="">ทั้งหมด</option>
+              <option value="technical">ปัญหาทางเทคนิค</option>
+              <option value="environment">สิ่งแวดล้อม</option>
+              <option value="hr">ทรัพยากรบุคคล</option>
+              <option value="equipment">อุปกรณ์</option>
+              <option value="safety">ความปลอดภัยและความมั่นคง</option>
+              <option value="financial">การเงิน</option>
+              <option value="others">อื่นๆ</option>
             </select>
           </div>
           <div>
@@ -223,20 +224,20 @@ export default function ComplaintsList({
               htmlFor="priority"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Priority
+              ความสำคัญ
             </label>
             <select
               id="priority"
               name="priority"
               value={filters.priority}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
             >
-              <option value="">All Priorities</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
+              <option value="">ทั้งหมด</option>
+              <option value="low">ต่ำ</option>
+              <option value="medium">กลาง</option>
+              <option value="high">สูง</option>
+              <option value="urgent">ด่วน</option>
             </select>
           </div>
           <div>
@@ -244,58 +245,26 @@ export default function ComplaintsList({
               htmlFor="status"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Status
+              สถานะ
             </label>
             <select
               id="status"
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
             >
-              <option value="">All Statuses</option>
-              <option value="new">New</option>
-              <option value="archived">Archived</option>
+              <option value="">ทั้งหมด</option>
+              <option value="new">ใหม่</option>
+              <option value="archived">จัดเก็บแล้ว</option>
             </select>
-          </div>
-          <div>
-            <label
-              htmlFor="dateFrom"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Date From
-            </label>
-            <input
-              type="date"
-              id="dateFrom"
-              name="dateFrom"
-              value={filters.dateFrom}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="dateTo"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Date To
-            </label>
-            <input
-              type="date"
-              id="dateTo"
-              name="dateTo"
-              value={filters.dateTo}
-              onChange={handleFilterChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
           </div>
           <div>
             <label
               htmlFor="search"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Search
+              ค้นหา
             </label>
             <input
               type="text"
@@ -303,16 +272,59 @@ export default function ComplaintsList({
               name="search"
               value={filters.search}
               onChange={handleFilterChange}
-              placeholder="Search in subject, description..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="ค้นหาเลขติดตาม หรือหัวข้อ..."
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="dateFrom"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              จากวันที่
+            </label>
+            <input
+              type="date"
+              id="dateFrom"
+              name="dateFrom"
+              value={filters.dateFrom}
+              onChange={handleFilterChange}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="dateTo"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              ถึงวันที่
+            </label>
+            <input
+              type="date"
+              id="dateTo"
+              name="dateTo"
+              value={filters.dateTo}
+              onChange={handleFilterChange}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
             />
           </div>
         </div>
-        <div className="mt-4 flex justify-end space-x-3">
-          <Button variant="outline" onClick={resetFilters}>
-            Reset Filters
+        <div className="mt-4 flex space-x-2">
+          {" "}
+          <Button
+            onClick={applyFilters}
+            variant="secondary"
+            className="px-4 py-2"
+          >
+            กรองข้อมูล
           </Button>
-          <Button onClick={applyFilters}>Apply Filters</Button>
+          <Button
+            onClick={resetFilters}
+            variant="outline"
+            className="px-4 py-2"
+          >
+            ล้างตัวกรอง
+          </Button>
         </div>
       </div>
 
@@ -326,43 +338,43 @@ export default function ComplaintsList({
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Tracking Number
+                  หมายเลขติดตาม
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Subject
+                  หัวข้อ
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Category
+                  หมวดหมู่
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Priority
+                  ความสำคัญ
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Date Submitted
+                  วันที่ส่ง
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Files
+                  ไฟล์
                 </th>
                 <th
                   scope="col"
                   className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Actions
+                  การดำเนินการ
                 </th>
               </tr>
             </thead>
@@ -373,7 +385,7 @@ export default function ComplaintsList({
                     colSpan={7}
                     className="px-6 py-4 text-center text-gray-500"
                   >
-                    No complaints found. Try adjusting your filters.
+                    ไม่พบคำร้องเรียน ลองปรับแต่งตัวกรองของคุณ
                   </td>
                 </tr>
               ) : (
@@ -403,22 +415,22 @@ export default function ComplaintsList({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {complaint.attachments.length > 0
-                        ? `${complaint.attachments.length} files`
-                        : "None"}
+                        ? `${complaint.attachments.length} ไฟล์`
+                        : "ไม่มี"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <a
                         href={`/dashboard/complaints/${complaint.id}`}
                         className="text-primary-600 hover:text-primary-900 mr-3"
                       >
-                        View
+                        ดู
                       </a>
                       {isAdmin && (
                         <button
                           onClick={() => handleDeleteComplaint(complaint.id)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          Delete
+                          ลบ
                         </button>
                       )}
                     </td>
@@ -435,19 +447,19 @@ export default function ComplaintsList({
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing{" "}
+                  แสดงผล{" "}
                   <span className="font-medium">
                     {(pagination.page - 1) * pagination.limit + 1}
                   </span>{" "}
-                  to{" "}
+                  ถึง{" "}
                   <span className="font-medium">
                     {Math.min(
                       pagination.page * pagination.limit,
                       pagination.total
                     )}
                   </span>{" "}
-                  of <span className="font-medium">{pagination.total}</span>{" "}
-                  results
+                  จาก <span className="font-medium">{pagination.total}</span>{" "}
+                  รายการ
                 </p>
               </div>
               <div>
@@ -462,7 +474,7 @@ export default function ComplaintsList({
                     disabled={pagination.page <= 1}
                     className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                   >
-                    Previous
+                    ก่อนหน้า
                   </button>
                   {Array.from({ length: pagination.pages }, (_, i) => i + 1)
                     .filter((pageNum) => {
@@ -515,7 +527,7 @@ export default function ComplaintsList({
                     disabled={pagination.page >= pagination.pages}
                     className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                   >
-                    Next
+                    ถัดไป
                   </button>
                 </nav>
               </div>

@@ -17,6 +17,7 @@ const buttonVariants = cva(
         success: "bg-success-600 text-white hover:bg-success-700 shadow-sm",
         ghost: "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
         link: "text-primary-700 underline-offset-4 hover:underline",
+        admin: "bg-blue-600 text-white hover:bg-blue-700 shadow-sm",
       },
       size: {
         default: "h-10 py-2 px-4",
