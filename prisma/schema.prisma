@@ -1,0 +1,78 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      Role     @default(viewer)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Complaint {
+  id             String       @id @default(cuid())
+  trackingNumber String       @unique @map("tracking_number")
+  category       Category
+  priority       Priority     @default(medium)
+  subject        String
+  description    String       @db.Text
+  status         Status       @default(new)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  attachments    Attachment[]
+
+  @@index([category])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("complaints")
+}
+
+model Attachment {
+  id           String    @id @default(cuid())
+  complaintId  String    @map("complaint_id")
+  originalName String    @map("original_name")
+  fileName     String    @map("file_name")
+  fileSize     Int       @map("file_size")
+  mimeType     String    @map("mime_type")
+  filePath     String    @map("file_path")
+  uploadedAt   DateTime  @default(now()) @map("uploaded_at")
+  complaint    Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+enum Role {
+  admin
+  viewer
+}
+
+enum Category {
+  technical
+  environment
+  hr
+  equipment
+  safety
+  financial
+  others
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum Status {
+  new
+  archived
+}
