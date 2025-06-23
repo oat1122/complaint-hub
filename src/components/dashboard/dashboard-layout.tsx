@@ -236,10 +236,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
-            </div>          </div>
+            </div>{" "}
+          </div>
         </div>
       </div>
-      
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <div className="relative z-[50] flex-shrink-0 flex h-16 bg-white shadow-sm border-b border-gray-200">
           <button
@@ -249,7 +249,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <span className="sr-only">Open sidebar</span>
             <Menu className="h-6 w-6" />
           </button>
-          
+
           <div className="flex-1 px-4 flex justify-between items-center">
             {/* ด้านซ้าย - ชื่อเมนู (เฉพาะโหมด mobile) */}
             <div className="block lg:hidden">
@@ -258,7 +258,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   "Complaint Hub"}
               </h1>
             </div>
-              
+
             {/* ด้านขวา - แสดงสถานะและการแจ้งเตือน */}
             <div className="flex items-center space-x-4 ml-auto">
               {!isAdmin && (
@@ -266,7 +266,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   โหมดดูอย่างเดียว
                 </div>
               )}
-              
+
               <div className="relative z-[100]">
                 <NotificationBell />
               </div>

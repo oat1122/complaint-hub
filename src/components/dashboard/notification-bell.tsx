@@ -25,23 +25,26 @@ export default function NotificationBell() {
   // Fetch notifications on component mount and every minute
   useEffect(() => {
     fetchNotifications();
-    
+
     // Setup polling every minute for new notifications
     const intervalId = setInterval(() => {
       fetchNotifications();
     }, 60000); // 60 seconds
-    
+
     return () => clearInterval(intervalId);
   }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -52,13 +55,13 @@ export default function NotificationBell() {
       setError(null);
 
       const response = await fetch("/api/notifications");
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch notifications");
       }
-      
+
       const data = await response.json();
-      
+
       setNotifications(data.notifications || []);
       setTotalCount(data.total || 0);
     } catch (error: any) {
@@ -114,13 +117,13 @@ export default function NotificationBell() {
       low: "ต่ำ",
       medium: "ปานกลาง",
       high: "สูง",
-      urgent: "ฉุกเฉิน"
+      urgent: "ฉุกเฉิน",
     };
     return priorities[priority] || priority;
   };
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
+      <button
         className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         onClick={toggleDropdown}
         aria-label="การแจ้งเตือน"
@@ -131,12 +134,15 @@ export default function NotificationBell() {
             {totalCount > 9 ? "9+" : totalCount}
           </span>
         )}
-      </button>        {isOpen && (
+      </button>{" "}
+      {isOpen && (
         <div className="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[100] border border-gray-200 overflow-hidden">
           <div className="py-1">
             <div className="px-4 py-2 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h3 className="text-sm font-medium text-gray-900">การแจ้งเตือน</h3>
+                <h3 className="text-sm font-medium text-gray-900">
+                  การแจ้งเตือน
+                </h3>
                 {totalCount > 0 && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {totalCount} รายการ
@@ -160,7 +166,7 @@ export default function NotificationBell() {
             ) : (
               <>
                 {notifications.map((notification) => (
-                  <Link 
+                  <Link
                     key={notification.id}
                     href={`/dashboard/complaints/${notification.id}`}
                     className="block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100"
@@ -172,27 +178,33 @@ export default function NotificationBell() {
                           {notification.subject}
                         </p>
                         <div className="flex items-center text-xs text-gray-500">
-                          <span className="mr-2">#{notification.trackingNumber}</span>
+                          <span className="mr-2">
+                            #{notification.trackingNumber}
+                          </span>
                           <span className="mr-2">•</span>
                           <span>{formatDate(notification.createdAt)}</span>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 text-xs rounded-full ml-2 whitespace-nowrap ${getPriorityClass(notification.priority)}`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ml-2 whitespace-nowrap ${getPriorityClass(
+                          notification.priority
+                        )}`}
+                      >
                         {getPriorityText(notification.priority)}
                       </span>
                     </div>
                   </Link>
                 ))}
-                
+
                 <div className="bg-gray-50 px-4 py-3 flex justify-between">
-                  <Link 
-                    href="/dashboard/complaints" 
+                  <Link
+                    href="/dashboard/complaints"
                     className="text-sm text-blue-600 hover:text-blue-800"
                     onClick={() => setIsOpen(false)}
                   >
                     ดูทั้งหมด
                   </Link>
-                  
+
                   <button
                     onClick={markAsRead}
                     className="text-sm text-gray-600 hover:text-gray-800"
