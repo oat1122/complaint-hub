@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { BarChart4 } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -16,6 +17,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Area,
 } from "recharts";
 
 interface DashboardStatsProps {
@@ -97,59 +99,46 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
       date: formatDate(item.date),
       count: item.count,
     })) || [];
-
   // Colors for pie charts
   const CATEGORY_COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884D8",
-    "#82CA9D",
-    "#A4DE6C",
+    "#3b82f6", // blue-500
+    "#10b981", // emerald-500
+    "#f59e0b", // amber-500
+    "#ef4444", // red-500
+    "#8b5cf6", // violet-500
+    "#ec4899", // pink-500
+    "#6366f1", // indigo-500
   ];
-  const PRIORITY_COLORS = ["#54B4D3", "#FFCA28", "#FF9800", "#F44336"];
+  const PRIORITY_COLORS = [
+    "#60a5fa", // blue-400
+    "#fbbf24", // amber-400
+    "#f97316", // orange-500
+    "#ef4444", // red-500
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Complaints"
-          value={stats.totalComplaints}
-          description="All time"
-        />
-        <StatCard
-          title="Today's Complaints"
-          value={stats.todaysComplaints}
-          description="Last 24 hours"
-        />
-        <StatCard
-          title="File Attachments"
-          value={stats.attachments?.total || 0}
-          description={`Avg. ${
-            stats.attachments?.avgPerComplaint.toFixed(1) || 0
-          } per complaint`}
-        />
-        <StatCard
-          title="Top Category"
-          value={
-            stats.topCategories?.[0]?.category
-              ? formatCategoryName(stats.topCategories[0].category)
-              : "N/A"
-          }
-          description={
-            stats.topCategories?.[0]?.count
-              ? `${stats.topCategories[0].count} complaints`
-              : ""
-          }
-        />
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-5 flex items-center gap-2">
+          <BarChart4 className="h-5 w-5 text-blue-500" />
+          ภาพรวมรายงานสถิติ
+        </h2>
       </div>
 
-      {/* Category Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white p-5 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Complaints by Category</h3>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Category Distribution */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">
+              หมวดหมู่คำร้องเรียน
+            </h3>
+            <select className="text-sm border border-gray-300 rounded-md px-2 py-1">
+              <option>ทั้งหมด</option>
+              <option>30 วันล่าสุด</option>
+              <option>ปีนี้</option>
+            </select>
+          </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -157,19 +146,53 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
                 layout="vertical"
                 margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
                 <XAxis type="number" />
-                <YAxis dataKey="name" type="category" />
-                <Tooltip />
-                <Bar dataKey="value" fill="#0ea5e9" />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  tick={{ fill: "#4b5563", fontSize: 12 }}
+                  width={120}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "white",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    border: "1px solid #e5e7eb",
+                  }}
+                  formatter={(value: any) => [`${value} คำร้อง`, "จำนวน"]}
+                />
+                <Bar
+                  dataKey="value"
+                  fill="#3b82f6"
+                  radius={[0, 4, 4, 0]}
+                  barSize={30}
+                >
+                  {categoryData.map((entry: any, index: number) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={CATEGORY_COLORS[index % CATEGORY_COLORS.length]}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Priority Distribution */}
-        <div className="bg-white p-5 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">Complaints by Priority</h3>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-800">
+              ระดับความสำคัญ
+            </h3>
+            <select className="text-sm border border-gray-300 rounded-md px-2 py-1">
+              <option>ทั้งหมด</option>
+              <option>30 วันล่าสุด</option>
+              <option>ปีนี้</option>
+            </select>
+          </div>
           <div className="h-80 flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -178,43 +201,121 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
                   cx="50%"
                   cy="50%"
                   labelLine={true}
-                  outerRadius={100}
+                  outerRadius={120}
+                  innerRadius={60}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
+                  paddingAngle={2}
+                  label={({ name, value, percent }) =>
+                    `${name}: ${Math.round(percent * 100)}%`
+                  }
                 >
                   {priorityData.map((entry: any, index: number) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={PRIORITY_COLORS[index % PRIORITY_COLORS.length]}
+                      stroke="white"
+                      strokeWidth={2}
                     />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip
+                  formatter={(value: any) => [`${value} คำร้อง`, "จำนวน"]}
+                  contentStyle={{
+                    backgroundColor: "white",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    border: "1px solid #e5e7eb",
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
+          </div>
+
+          <div className="flex justify-center items-center gap-4 mt-2">
+            {priorityData.map((entry: any, index: number) => (
+              <div key={index} className="flex items-center">
+                <div
+                  className="w-3 h-3 rounded-full mr-1"
+                  style={{
+                    backgroundColor:
+                      PRIORITY_COLORS[index % PRIORITY_COLORS.length],
+                  }}
+                />
+                <span className="text-xs text-gray-600">{entry.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Daily Trend */}
-      <div className="bg-white p-5 rounded-lg shadow">
-        <h3 className="text-lg font-semibold mb-4">Daily Complaint Trend</h3>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-gray-800">
+            แนวโน้มคำร้องเรียนรายวัน
+          </h3>
+          <select className="text-sm border border-gray-300 rounded-md px-2 py-1">
+            <option>30 วัน</option>
+            <option>60 วัน</option>
+            <option>90 วัน</option>
+          </select>
+        </div>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={dailyData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
+              <defs>
+                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                opacity={0.3}
+              />
+              <XAxis
+                dataKey="date"
+                tick={{ fill: "#4b5563", fontSize: 12 }}
+                axisLine={{ stroke: "#e5e7eb" }}
+                tickLine={false}
+                dy={10}
+              />
+              <YAxis
+                tick={{ fill: "#4b5563", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                  border: "1px solid #e5e7eb",
+                }}
+                formatter={(value: any) => [`${value} คำร้อง`, "จำนวน"]}
+                labelFormatter={(label) => `วันที่: ${label}`}
+              />
+              <Area
+                type="monotone"
+                dataKey="count"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorCount)"
+                activeDot={{ r: 6, stroke: "white", strokeWidth: 2 }}
+              />
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#0ea5e9"
-                strokeWidth={2}
+                stroke="#3b82f6"
+                strokeWidth={3}
+                dot={{ r: 3, fill: "white", stroke: "#3b82f6", strokeWidth: 2 }}
+                activeDot={{ r: 6, stroke: "white", strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -224,42 +325,34 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
   );
 }
 
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  description: string;
-}
-
-function StatCard({ title, value, description }: StatCardProps) {
-  return (
-    <div className="bg-white p-5 rounded-lg shadow">
-      <h3 className="text-sm font-medium text-gray-500 mb-1">{title}</h3>
-      <div className="flex items-baseline">
-        <p className="text-3xl font-semibold">{value}</p>
-      </div>
-      <p className="text-xs text-gray-500 mt-1">{description}</p>
-    </div>
-  );
-}
+// StatCard component ถูกย้ายไปใช้ใน dashboard/page.tsx แล้ว
 
 function formatCategoryName(category: string): string {
   const categories: Record<string, string> = {
-    technical: "Technical Issues",
-    environment: "Environment",
-    hr: "Human Resources",
-    equipment: "Equipment",
-    safety: "Safety & Security",
-    financial: "Financial",
-    others: "Others",
+    technical: "ปัญหาทางเทคนิค",
+    environment: "สภาพแวดล้อม",
+    hr: "ทรัพยากรบุคคล",
+    equipment: "อุปกรณ์",
+    safety: "ความปลอดภัย",
+    financial: "การเงิน",
+    others: "อื่นๆ",
   };
   return categories[category] || category;
 }
 
 function formatPriorityName(priority: string): string {
-  return priority.charAt(0).toUpperCase() + priority.slice(1);
+  const priorities: Record<string, string> = {
+    low: "ต่ำ",
+    medium: "ปานกลาง",
+    high: "สูง",
+    urgent: "ฉุกเฉิน",
+  };
+  return (
+    priorities[priority] || priority.charAt(0).toUpperCase() + priority.slice(1)
+  );
 }
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("th-TH", { month: "short", day: "numeric" });
 }

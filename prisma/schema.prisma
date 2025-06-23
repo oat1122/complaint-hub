@@ -76,3 +76,13 @@ enum Status {
   new
   archived
 }
+
+model Settings {
+  id                  String  @id @default("singleton")
+  itemsPerPage        Int     @default(10) @map("items_per_page")
+  autoArchiveDays     Int     @default(90) @map("auto_archive_days")
+  enableAutoArchive   Boolean @default(false) @map("enable_auto_archive")
+  lastUpdated         DateTime @default(now()) @map("last_updated")
+
+  @@map("settings")
+}
