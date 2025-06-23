@@ -131,9 +131,8 @@ export default function NotificationBell() {
             {totalCount > 9 ? "9+" : totalCount}
           </span>
         )}
-      </button>
-        {isOpen && (
-        <div className="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[100] border border-gray-200">
+      </button>        {isOpen && (
+        <div className="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[100] border border-gray-200 overflow-hidden">
           <div className="py-1">
             <div className="px-4 py-2 border-b border-gray-200">
               <div className="flex justify-between items-center">

@@ -236,10 +236,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
-            </div>
-          </div>
+            </div>          </div>
         </div>
-      </div>{" "}      <div className="flex flex-col w-0 flex-1 overflow-hidden">
+      </div>
+      
+      <div className="flex flex-col w-0 flex-1 overflow-hidden">
         <div className="relative z-[50] flex-shrink-0 flex h-16 bg-white shadow-sm border-b border-gray-200">
           <button
             className="lg:hidden px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 hover:bg-gray-100"
@@ -248,33 +249,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <span className="sr-only">Open sidebar</span>
             <Menu className="h-6 w-6" />
           </button>
+          
           <div className="flex-1 px-4 flex justify-between items-center">
-            <div className="flex-1 flex justify-between items-center">
-              <div className="block lg:hidden">
-                <h1 className="text-lg font-semibold text-gray-800">
-                  {navItems.find((item) => item.href === pathname)?.name ||
-                    "Complaint Hub"}
-                </h1>
-              </div>              <div className="flex items-center space-x-4">
-                {!isAdmin && (
-                  <div className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold border border-yellow-200">
-                    โหมดดูอย่างเดียว
-                  </div>
-                )}
-                
-                <div className="relative z-[100]">
-                  <NotificationBell />
+            {/* ด้านซ้าย - ชื่อเมนู (เฉพาะโหมด mobile) */}
+            <div className="block lg:hidden">
+              <h1 className="text-lg font-semibold text-gray-800">
+                {navItems.find((item) => item.href === pathname)?.name ||
+                  "Complaint Hub"}
+              </h1>
+            </div>
+              
+            {/* ด้านขวา - แสดงสถานะและการแจ้งเตือน */}
+            <div className="flex items-center space-x-4 ml-auto">
+              {!isAdmin && (
+                <div className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold border border-yellow-200">
+                  โหมดดูอย่างเดียว
                 </div>
+              )}
+              
+              <div className="relative z-[100]">
+                <NotificationBell />
+              </div>
 
-                <div className="ml-4 flex items-center lg:hidden">
-                  <button
-                    className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    onClick={() => signOut({ callbackUrl: "/" })}
-                  >
-                    <span className="sr-only">ออกจากระบบ</span>
-                    <LogOut className="h-5 w-5" />
-                  </button>
-                </div>
+              <div className="ml-4 flex items-center lg:hidden">
+                <button
+                  className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                >
+                  <span className="sr-only">ออกจากระบบ</span>
+                  <LogOut className="h-5 w-5" />
+                </button>
               </div>
             </div>
           </div>
