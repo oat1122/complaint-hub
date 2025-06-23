@@ -10,25 +10,27 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  role      Role     @default(viewer)
-  createdAt DateTime @default(now()) @map("created_at")
+  id              String            @id @default(cuid())
+  username        String            @unique
+  password        String
+  role            Role              @default(viewer)
+  createdAt       DateTime          @default(now()) @map("created_at")
+  notifications   UserNotification[]
 
   @@map("users")
 }
 
 model Complaint {
-  id             String       @id @default(cuid())
-  trackingNumber String       @unique @map("tracking_number")
+  id             String             @id @default(cuid())
+  trackingNumber String             @unique @map("tracking_number")
   category       Category
-  priority       Priority     @default(medium)
+  priority       Priority           @default(medium)
   subject        String
-  description    String       @db.Text
-  status         Status       @default(new)
-  createdAt      DateTime     @default(now()) @map("created_at")
+  description    String             @db.Text
+  status         Status             @default(new)
+  createdAt      DateTime           @default(now()) @map("created_at")
   attachments    Attachment[]
+  userNotifications UserNotification[]
 
   @@index([category])
   @@index([priority])
@@ -48,6 +50,25 @@ model Attachment {
   complaint    Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
 
   @@map("attachments")
+}
+
+model UserNotification {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  complaintId String    @map("complaint_id")
+  isRead      Boolean   @default(false) @map("is_read")
+  isDeleted   Boolean   @default(false) @map("is_deleted")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, complaintId])
+  @@index([userId])
+  @@index([complaintId])
+  @@index([isRead])
+  @@index([isDeleted])
+  @@map("user_notifications")
 }
 
 enum Role {

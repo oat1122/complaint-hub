@@ -8,6 +8,7 @@ import { th } from "date-fns/locale";
 
 interface Notification {
   id: string;
+  complaintId?: string; // Optional complaintId for when notifications reference complaints
   subject: string;
   trackingNumber: string;
   priority: "low" | "medium" | "high" | "urgent";
@@ -23,6 +24,51 @@ export default function NotificationBell() {
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+
+  // Load read/deleted notification IDs from localStorage
+  useEffect(() => {
+    try {
+      // Load read notification IDs
+      const savedReadIds = localStorage.getItem("readNotifications");
+      if (savedReadIds) {
+        setReadIds(new Set(JSON.parse(savedReadIds)));
+      }
+
+      // Load deleted notification IDs
+      const savedDeletedIds = localStorage.getItem("deletedNotifications");
+      if (savedDeletedIds) {
+        setDeletedIds(new Set(JSON.parse(savedDeletedIds)));
+      }
+    } catch (error) {
+      console.error("Error loading notification state from localStorage:", error);
+    }
+  }, []);
+
+  // Save read/deleted IDs to localStorage whenever they change
+  useEffect(() => {
+    try {
+      if (readIds.size > 0) {
+        localStorage.setItem("readNotifications", JSON.stringify([...readIds]));
+      }
+    } catch (error) {
+      console.error("Error saving read notifications to localStorage:", error);
+    }
+  }, [readIds]);
+
+  useEffect(() => {
+    try {
+      if (deletedIds.size > 0) {
+        localStorage.setItem(
+          "deletedNotifications",
+          JSON.stringify([...deletedIds])
+        );
+      }
+    } catch (error) {
+      console.error("Error saving deleted notifications to localStorage:", error);
+    }
+  }, [deletedIds]);
 
   // Fetch notifications on component mount and every minute
   useEffect(() => {
@@ -35,12 +81,33 @@ export default function NotificationBell() {
 
     return () => clearInterval(intervalId);
   }, []);
-
   // Auto-open dropdown when new notifications arrive
   useEffect(() => {
     // Only open if count has increased and we're not already showing the dropdown
     if (totalCount > prevCountRef.current && !isOpen) {
       setIsOpen(true);
+      
+      // Show notification sound or animation effect
+      try {
+        // Create sound effect for new notification
+        const audio = new Audio("/notification-sound.mp3"); // You may need to add this file
+        audio.volume = 0.5;
+        audio.play().catch(err => {
+          // Autoplay may be blocked, which is fine
+          console.log("Notification sound blocked by browser");
+        });
+        
+        // Optional: add a subtle animation to the bell
+        const bellButton = document.querySelector(".notification-bell");
+        if (bellButton) {
+          bellButton.classList.add("animate-ring");
+          setTimeout(() => {
+            bellButton.classList.remove("animate-ring");
+          }, 2000);
+        }
+      } catch (err) {
+        // Ignore audio errors
+      }
     }
     prevCountRef.current = totalCount;
   }, [totalCount, isOpen]);
@@ -59,7 +126,6 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
@@ -73,8 +139,26 @@ export default function NotificationBell() {
 
       const data = await response.json();
 
-      setNotifications(data.notifications || []);
-      setTotalCount(data.total || 0);
+      // Filter out any notifications that have been deleted by the user
+      const filteredNotifications = (data.notifications || []).filter(
+        (notification: { id: string }) => !deletedIds.has(notification.id)
+      );
+
+      // Apply read status from local storage
+      const notificationsWithLocalState = filteredNotifications.map(
+        (notification: { id: string; isRead: boolean }) => ({
+          ...notification,
+          isRead: notification.isRead || readIds.has(notification.id),
+        })
+      );
+
+      setNotifications(notificationsWithLocalState);
+      
+      // Update total count from unread notifications only
+      const unreadCount = notificationsWithLocalState.filter(
+        (notification: { isRead: boolean }) => !notification.isRead
+      ).length;
+      setTotalCount(unreadCount);
     } catch (error: any) {
       console.error("Error fetching notifications:", error);
       setError(error.message || "Failed to fetch notifications");
@@ -85,19 +169,49 @@ export default function NotificationBell() {
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
+    
+    // When opening the dropdown, mark all as seen locally
+    if (!isOpen) {
+      const newReadIds = new Set(readIds);
+      notifications.forEach(notification => {
+        if (!notification.isRead) {
+          newReadIds.add(notification.id);
+        }
+      });
+      setReadIds(newReadIds);
+    }
   };
-
   const markAsRead = async () => {
     try {
+      // Mark all as read in local storage
+      const newReadIds = new Set(readIds);
+      notifications.forEach(notification => {
+        newReadIds.add(notification.id);
+      });
+      setReadIds(newReadIds);
+
+      // Update the notifications in UI
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => ({ ...notification, isRead: true }))
+      );
+      
+      // Update count
+      setTotalCount(0);
+      
+      // Optional: update on server
       await fetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "markAsRead" }),
       });
 
-      // Refresh notifications after marking as read
-      fetchNotifications();
+      // Close dropdown
       setIsOpen(false);
+      
+      // Refresh unread notifications
+      setTimeout(() => {
+        fetchNotifications();
+      }, 300);
     } catch (error) {
       console.error("Error marking notifications as read:", error);
     }
@@ -107,6 +221,23 @@ export default function NotificationBell() {
     event.preventDefault();
     event.stopPropagation();
     try {
+      // Add to deleted IDs
+      const newDeletedIds = new Set(deletedIds);
+      newDeletedIds.add(id);
+      setDeletedIds(newDeletedIds);
+
+      // Remove from UI immediately
+      setNotifications(prevNotifications => 
+        prevNotifications.filter(notification => notification.id !== id)
+      );
+      
+      // Update count if it was unread
+      const wasUnread = !readIds.has(id);
+      if (wasUnread) {
+        setTotalCount(prevCount => Math.max(0, prevCount - 1));
+      }
+
+      // Optional: update on server
       const response = await fetch("/api/notifications", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -116,12 +247,13 @@ export default function NotificationBell() {
       if (!response.ok) {
         throw new Error("Failed to delete notification");
       }
-
-      // Remove from local state to avoid re-fetching
-      setNotifications((prevNotifications) =>
-        prevNotifications.filter((notification) => notification.id !== id)
-      );
-      setTotalCount((prevCount) => Math.max(0, prevCount - 1));
+      
+      // If there are more unread notifications, show them by refreshing
+      if (totalCount > 1) {
+        setTimeout(() => {
+          fetchNotifications();
+        }, 500);
+      }
     } catch (error) {
       console.error("Error deleting notification:", error);
     }
@@ -157,9 +289,8 @@ export default function NotificationBell() {
     return priorities[priority] || priority;
   };
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+    <div className="relative" ref={dropdownRef}>      <button
+        className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 notification-bell"
         onClick={toggleDropdown}
         aria-label="การแจ้งเตือน"
       >
@@ -199,32 +330,41 @@ export default function NotificationBell() {
                 ไม่มีการแจ้งเตือนใหม่
               </div>
             ) : (
-              <>                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
-                      !notification.isRead ? "bg-blue-50" : ""
+              <>
+                {notifications.map((notification) => (                  <div
+                    key={notification.id}                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
+                      !notification.isRead ? "bg-blue-50 notification-highlight" : ""
                     }`}
                   >
                     <Link
-                      href={`/dashboard/complaints/${notification.id}`}
+                      href={`/dashboard/complaints/${notification.complaintId || notification.id}`}
                       className="block"
-                      onClick={() => setIsOpen(false)}
+                      onClick={() => {
+                        // Mark this notification as read when clicked
+                        const newReadIds = new Set(readIds);
+                        newReadIds.add(notification.id);
+                        setReadIds(newReadIds);
+                        
+                        // Close dropdown
+                        setIsOpen(false);
+                      }}
                     >
                       <div className="flex items-start pr-6">
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate mb-1 ${
-                            !notification.isRead ? "text-blue-600 font-semibold" : "text-gray-900"
-                          }`}>
+                          <p
+                            className={`text-sm font-medium truncate mb-1 ${
+                              !notification.isRead
+                                ? "text-blue-600 font-semibold"
+                                : "text-gray-900"
+                            }`}
+                          >
                             {notification.subject}
                             {!notification.isRead && (
                               <span className="ml-2 inline-block w-2 h-2 rounded-full bg-blue-500"></span>
                             )}
                           </p>
                           <div className="flex items-center text-xs text-gray-500">
-                            <span className="mr-2">
-                              #{notification.trackingNumber}
-                            </span>
+                            <span className="mr-2">#{notification.trackingNumber}</span>
                             <span className="mr-2">•</span>
                             <span>{formatDate(notification.createdAt)}</span>
                           </div>
@@ -237,18 +377,29 @@ export default function NotificationBell() {
                           {getPriorityText(notification.priority)}
                         </span>
                       </div>
-                    </Link>
-                    <button
-                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+                    </Link>                    <button
+                      className="absolute top-3 right-3 text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
                       onClick={(e) => deleteNotification(notification.id, e)}
                       aria-label="ลบการแจ้งเตือน"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
-                ))}                <div className="bg-gray-50 px-4 py-3 flex justify-between">
+                ))}
+                <div className="bg-gray-50 px-4 py-3 flex justify-between">
                   <Link
                     href="/dashboard/complaints"
                     className="text-sm text-blue-600 hover:text-blue-800"

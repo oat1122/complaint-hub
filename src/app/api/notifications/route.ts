@@ -14,7 +14,12 @@ export async function GET(request: NextRequest) {
         { error: "Unauthorized" },
         { status: 401 }
       );
-    }    // Get new complaints (used as notifications)
+    }
+    
+    const userId = session.user.id;
+    
+    // Get new complaints (used as notifications)
+    // For now, we'll use localStorage on the client side to track what's been read/deleted
     const newComplaints = await prisma.complaint.findMany({
       where: {
         status: "new",
@@ -40,13 +45,11 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Transform data to include isRead (status != "new" means it's been read)
+    // Transform data to include isRead status (for now all new complaints are unread)
     const notifications = newComplaints.map(complaint => ({
       ...complaint,
-      isRead: complaint.status !== "new"
-    }));
-
-    return NextResponse.json({
+      isRead: false
+    }));    return NextResponse.json({
       notifications,
       total: totalNewComplaints
     });
@@ -73,16 +76,30 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action } = body;    if (action === "markAsRead") {
-      // Mark all new complaints as archived
-      await prisma.complaint.updateMany({
-        where: {
-          status: "new"
-        },
-        data: {
-          status: "archived"
-        }
-      });
+    const { action, id } = body;
+    
+    if (action === "markAsRead") {
+      if (id) {
+        // Mark a specific notification as read by archiving the complaint
+        await prisma.complaint.update({
+          where: {
+            id
+          },
+          data: {
+            status: "archived"
+          }
+        });
+      } else {
+        // Mark all new complaints as archived
+        await prisma.complaint.updateMany({
+          where: {
+            status: "new"
+          },
+          data: {
+            status: "archived"
+          }
+        });
+      }
     }
 
     return NextResponse.json({ 
