@@ -12,6 +12,7 @@ interface Notification {
   trackingNumber: string;
   priority: "low" | "medium" | "high" | "urgent";
   createdAt: string;
+  isRead: boolean;
 }
 
 export default function NotificationBell() {
@@ -21,6 +22,7 @@ export default function NotificationBell() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const prevCountRef = useRef(0);
 
   // Fetch notifications on component mount and every minute
   useEffect(() => {
@@ -33,6 +35,15 @@ export default function NotificationBell() {
 
     return () => clearInterval(intervalId);
   }, []);
+
+  // Auto-open dropdown when new notifications arrive
+  useEffect(() => {
+    // Only open if count has increased and we're not already showing the dropdown
+    if (totalCount > prevCountRef.current && !isOpen) {
+      setIsOpen(true);
+    }
+    prevCountRef.current = totalCount;
+  }, [totalCount, isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -89,6 +100,30 @@ export default function NotificationBell() {
       setIsOpen(false);
     } catch (error) {
       console.error("Error marking notifications as read:", error);
+    }
+  };
+
+  const deleteNotification = async (id: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete notification");
+      }
+
+      // Remove from local state to avoid re-fetching
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter((notification) => notification.id !== id)
+      );
+      setTotalCount((prevCount) => Math.max(0, prevCount - 1));
+    } catch (error) {
+      console.error("Error deleting notification:", error);
     }
   };
 
@@ -164,39 +199,56 @@ export default function NotificationBell() {
                 ไม่มีการแจ้งเตือนใหม่
               </div>
             ) : (
-              <>
-                {notifications.map((notification) => (
-                  <Link
+              <>                {notifications.map((notification) => (
+                  <div
                     key={notification.id}
-                    href={`/dashboard/complaints/${notification.id}`}
-                    className="block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100"
-                    onClick={() => setIsOpen(false)}
+                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
+                      !notification.isRead ? "bg-blue-50" : ""
+                    }`}
                   >
-                    <div className="flex items-start">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate mb-1">
-                          {notification.subject}
-                        </p>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <span className="mr-2">
-                            #{notification.trackingNumber}
-                          </span>
-                          <span className="mr-2">•</span>
-                          <span>{formatDate(notification.createdAt)}</span>
+                    <Link
+                      href={`/dashboard/complaints/${notification.id}`}
+                      className="block"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <div className="flex items-start pr-6">
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate mb-1 ${
+                            !notification.isRead ? "text-blue-600 font-semibold" : "text-gray-900"
+                          }`}>
+                            {notification.subject}
+                            {!notification.isRead && (
+                              <span className="ml-2 inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                            )}
+                          </p>
+                          <div className="flex items-center text-xs text-gray-500">
+                            <span className="mr-2">
+                              #{notification.trackingNumber}
+                            </span>
+                            <span className="mr-2">•</span>
+                            <span>{formatDate(notification.createdAt)}</span>
+                          </div>
                         </div>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ml-2 whitespace-nowrap ${getPriorityClass(
+                            notification.priority
+                          )}`}
+                        >
+                          {getPriorityText(notification.priority)}
+                        </span>
                       </div>
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ml-2 whitespace-nowrap ${getPriorityClass(
-                          notification.priority
-                        )}`}
-                      >
-                        {getPriorityText(notification.priority)}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-
-                <div className="bg-gray-50 px-4 py-3 flex justify-between">
+                    </Link>
+                    <button
+                      className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+                      onClick={(e) => deleteNotification(notification.id, e)}
+                      aria-label="ลบการแจ้งเตือน"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}                <div className="bg-gray-50 px-4 py-3 flex justify-between">
                   <Link
                     href="/dashboard/complaints"
                     className="text-sm text-blue-600 hover:text-blue-800"
@@ -205,12 +257,14 @@ export default function NotificationBell() {
                     ดูทั้งหมด
                   </Link>
 
-                  <button
-                    onClick={markAsRead}
-                    className="text-sm text-gray-600 hover:text-gray-800"
-                  >
-                    ทำเครื่องหมายว่าอ่านแล้ว
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={markAsRead}
+                      className="text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      อ่านทั้งหมดแล้ว
+                    </button>
+                  </div>
                 </div>
               </>
             )}

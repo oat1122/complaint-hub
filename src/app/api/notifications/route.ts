@@ -14,9 +14,7 @@ export async function GET(request: NextRequest) {
         { error: "Unauthorized" },
         { status: 401 }
       );
-    }
-
-    // Get new complaints (used as notifications)
+    }    // Get new complaints (used as notifications)
     const newComplaints = await prisma.complaint.findMany({
       where: {
         status: "new",
@@ -31,6 +29,7 @@ export async function GET(request: NextRequest) {
         trackingNumber: true,
         priority: true,
         createdAt: true,
+        status: true,
       }
     });
 
@@ -41,8 +40,14 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // Transform data to include isRead (status != "new" means it's been read)
+    const notifications = newComplaints.map(complaint => ({
+      ...complaint,
+      isRead: complaint.status !== "new"
+    }));
+
     return NextResponse.json({
-      notifications: newComplaints,
+      notifications,
       total: totalNewComplaints
     });
   } catch (error) {
@@ -59,26 +64,77 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    // Check if user is authenticated and is an admin
-    if (!session || session.user.role !== "admin") {
+    // Check if user is authenticated
+    if (!session) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    // Currently our system doesn't track read status of notifications
-    // But in the future we can add this functionality
-    // For now, we'll just acknowledge the request
+    const body = await request.json();
+    const { action } = body;    if (action === "markAsRead") {
+      // Mark all new complaints as archived
+      await prisma.complaint.updateMany({
+        where: {
+          status: "new"
+        },
+        data: {
+          status: "archived"
+        }
+      });
+    }
 
     return NextResponse.json({ 
       success: true, 
-      message: "Notifications acknowledged" 
+      message: "Notifications marked as read" 
     });
   } catch (error) {
     console.error("Error processing notifications:", error);
     return NextResponse.json(
       { error: "Failed to process notifications" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/notifications - Delete a specific notification
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    // Check if user is authenticated
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { id } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Notification ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Archive the specific complaint instead of deleting it
+    await prisma.complaint.update({
+      where: { id },
+      data: { status: "archived" }
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: "Notification deleted" 
+    });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    return NextResponse.json(
+      { error: "Failed to delete notification" },
       { status: 500 }
     );
   }
