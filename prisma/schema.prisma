@@ -10,26 +10,26 @@ datasource db {
 }
 
 model User {
-  id              String            @id @default(cuid())
-  username        String            @unique
-  password        String
-  role            Role              @default(viewer)
-  createdAt       DateTime          @default(now()) @map("created_at")
-  notifications   UserNotification[]
+  id            String             @id @default(cuid())
+  username      String             @unique
+  password      String
+  role          Role               @default(viewer)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  notifications UserNotification[]
 
   @@map("users")
 }
 
 model Complaint {
-  id             String             @id @default(cuid())
-  trackingNumber String             @unique @map("tracking_number")
-  category       Category
-  priority       Priority           @default(medium)
-  subject        String
-  description    String             @db.Text
-  status         Status             @default(new)
-  createdAt      DateTime           @default(now()) @map("created_at")
-  attachments    Attachment[]
+  id                String             @id @default(cuid())
+  trackingNumber    String             @unique @map("tracking_number")
+  category          Category
+  priority          Priority           @default(medium)
+  subject           String
+  description       String             @db.Text
+  status            Status             @default(new)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  attachments       Attachment[]
   userNotifications UserNotification[]
 
   @@index([category])
@@ -99,11 +99,11 @@ enum Status {
 }
 
 model Settings {
-  id                  String  @id @default("singleton")
-  itemsPerPage        Int     @default(10) @map("items_per_page")
-  autoArchiveDays     Int     @default(90) @map("auto_archive_days")
-  enableAutoArchive   Boolean @default(false) @map("enable_auto_archive")
-  lastUpdated         DateTime @default(now()) @map("last_updated")
+  id                String   @id @default("singleton")
+  itemsPerPage      Int      @default(10) @map("items_per_page")
+  autoArchiveDays   Int      @default(90) @map("auto_archive_days")
+  enableAutoArchive Boolean  @default(false) @map("enable_auto_archive")
+  lastUpdated       DateTime @default(now()) @map("last_updated")
 
   @@map("settings")
 }

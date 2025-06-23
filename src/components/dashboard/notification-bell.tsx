@@ -24,51 +24,15 @@ export default function NotificationBell() {
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
-  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
-
-  // Load read/deleted notification IDs from localStorage
+  // Clean up any localStorage if it exists from previous versions
   useEffect(() => {
     try {
-      // Load read notification IDs
-      const savedReadIds = localStorage.getItem("readNotifications");
-      if (savedReadIds) {
-        setReadIds(new Set(JSON.parse(savedReadIds)));
-      }
-
-      // Load deleted notification IDs
-      const savedDeletedIds = localStorage.getItem("deletedNotifications");
-      if (savedDeletedIds) {
-        setDeletedIds(new Set(JSON.parse(savedDeletedIds)));
-      }
+      localStorage.removeItem("readNotifications");
+      localStorage.removeItem("deletedNotifications");
     } catch (error) {
-      console.error("Error loading notification state from localStorage:", error);
+      console.error("Error removing localStorage items:", error);
     }
   }, []);
-
-  // Save read/deleted IDs to localStorage whenever they change
-  useEffect(() => {
-    try {
-      if (readIds.size > 0) {
-        localStorage.setItem("readNotifications", JSON.stringify([...readIds]));
-      }
-    } catch (error) {
-      console.error("Error saving read notifications to localStorage:", error);
-    }
-  }, [readIds]);
-
-  useEffect(() => {
-    try {
-      if (deletedIds.size > 0) {
-        localStorage.setItem(
-          "deletedNotifications",
-          JSON.stringify([...deletedIds])
-        );
-      }
-    } catch (error) {
-      console.error("Error saving deleted notifications to localStorage:", error);
-    }
-  }, [deletedIds]);
 
   // Fetch notifications on component mount and every minute
   useEffect(() => {
@@ -80,8 +44,7 @@ export default function NotificationBell() {
     }, 60000); // 60 seconds
 
     return () => clearInterval(intervalId);
-  }, []);
-  // Auto-open dropdown when new notifications arrive
+  }, []);  // Auto-open dropdown when new notifications arrive
   useEffect(() => {
     // Only open if count has increased and we're not already showing the dropdown
     if (totalCount > prevCountRef.current && !isOpen) {
@@ -111,6 +74,17 @@ export default function NotificationBell() {
     }
     prevCountRef.current = totalCount;
   }, [totalCount, isOpen]);
+  
+  // Clean up localStorage storage when using server-based user notifications
+  useEffect(() => {
+    // Remove localStorage items since we're using server-side storage now
+    try {
+      localStorage.removeItem('readNotifications');
+      localStorage.removeItem('deletedNotifications');
+    } catch (error) {
+      console.error("Error removing localStorage items:", error);
+    }
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -125,8 +99,7 @@ export default function NotificationBell() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-  const fetchNotifications = async () => {
+  }, []);  const fetchNotifications = async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -139,26 +112,11 @@ export default function NotificationBell() {
 
       const data = await response.json();
 
-      // Filter out any notifications that have been deleted by the user
-      const filteredNotifications = (data.notifications || []).filter(
-        (notification: { id: string }) => !deletedIds.has(notification.id)
-      );
-
-      // Apply read status from local storage
-      const notificationsWithLocalState = filteredNotifications.map(
-        (notification: { id: string; isRead: boolean }) => ({
-          ...notification,
-          isRead: notification.isRead || readIds.has(notification.id),
-        })
-      );
-
-      setNotifications(notificationsWithLocalState);
+      // Use notifications directly from the server
+      setNotifications(data.notifications || []);
       
-      // Update total count from unread notifications only
-      const unreadCount = notificationsWithLocalState.filter(
-        (notification: { isRead: boolean }) => !notification.isRead
-      ).length;
-      setTotalCount(unreadCount);
+      // Total count is already calculated on the server
+      setTotalCount(data.total || 0);
     } catch (error: any) {
       console.error("Error fetching notifications:", error);
       setError(error.message || "Failed to fetch notifications");
@@ -166,31 +124,11 @@ export default function NotificationBell() {
       setIsLoading(false);
     }
   };
-
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
-    
-    // When opening the dropdown, mark all as seen locally
-    if (!isOpen) {
-      const newReadIds = new Set(readIds);
-      notifications.forEach(notification => {
-        if (!notification.isRead) {
-          newReadIds.add(notification.id);
-        }
-      });
-      setReadIds(newReadIds);
-    }
-  };
-  const markAsRead = async () => {
+  };const markAsRead = async () => {
     try {
-      // Mark all as read in local storage
-      const newReadIds = new Set(readIds);
-      notifications.forEach(notification => {
-        newReadIds.add(notification.id);
-      });
-      setReadIds(newReadIds);
-
-      // Update the notifications in UI
+      // Update UI first for instant feedback
       setNotifications(prevNotifications => 
         prevNotifications.map(notification => ({ ...notification, isRead: true }))
       );
@@ -198,7 +136,7 @@ export default function NotificationBell() {
       // Update count
       setTotalCount(0);
       
-      // Optional: update on server
+      // Update on server
       await fetch("/api/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -208,36 +146,35 @@ export default function NotificationBell() {
       // Close dropdown
       setIsOpen(false);
       
-      // Refresh unread notifications
+      // Refresh notifications from server
       setTimeout(() => {
         fetchNotifications();
       }, 300);
     } catch (error) {
       console.error("Error marking notifications as read:", error);
+      // On error, refresh to get the correct state
+      fetchNotifications();
     }
   };
-
   const deleteNotification = async (id: string, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     try {
-      // Add to deleted IDs
-      const newDeletedIds = new Set(deletedIds);
-      newDeletedIds.add(id);
-      setDeletedIds(newDeletedIds);
-
-      // Remove from UI immediately
+      // Find if the notification was unread before removing
+      const targetNotification = notifications.find(n => n.id === id);
+      const wasUnread = targetNotification ? !targetNotification.isRead : false;
+      
+      // Remove from UI immediately for responsive feel
       setNotifications(prevNotifications => 
         prevNotifications.filter(notification => notification.id !== id)
       );
       
       // Update count if it was unread
-      const wasUnread = !readIds.has(id);
       if (wasUnread) {
         setTotalCount(prevCount => Math.max(0, prevCount - 1));
       }
 
-      // Optional: update on server
+      // Call API to delete notification on server
       const response = await fetch("/api/notifications", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -256,6 +193,8 @@ export default function NotificationBell() {
       }
     } catch (error) {
       console.error("Error deleting notification:", error);
+      // On error, refresh to get correct state
+      fetchNotifications();
     }
   };
 
@@ -335,15 +274,16 @@ export default function NotificationBell() {
                     key={notification.id}                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
                       !notification.isRead ? "bg-blue-50 notification-highlight" : ""
                     }`}
-                  >
-                    <Link
+                  >                    <Link
                       href={`/dashboard/complaints/${notification.complaintId || notification.id}`}
                       className="block"
                       onClick={() => {
-                        // Mark this notification as read when clicked
-                        const newReadIds = new Set(readIds);
-                        newReadIds.add(notification.id);
-                        setReadIds(newReadIds);
+                        // Mark this notification as read on the server
+                        fetch("/api/notifications", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "markAsRead", id: notification.id }),
+                        });
                         
                         // Close dropdown
                         setIsOpen(false);
