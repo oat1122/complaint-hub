@@ -44,22 +44,22 @@ export default function NotificationBell() {
     }, 60000); // 60 seconds
 
     return () => clearInterval(intervalId);
-  }, []);  // Auto-open dropdown when new notifications arrive
+  }, []); // Auto-open dropdown when new notifications arrive
   useEffect(() => {
     // Only open if count has increased and we're not already showing the dropdown
     if (totalCount > prevCountRef.current && !isOpen) {
       setIsOpen(true);
-      
+
       // Show notification sound or animation effect
       try {
         // Create sound effect for new notification
         const audio = new Audio("/notification-sound.mp3"); // You may need to add this file
         audio.volume = 0.5;
-        audio.play().catch(err => {
+        audio.play().catch((err) => {
           // Autoplay may be blocked, which is fine
           console.log("Notification sound blocked by browser");
         });
-        
+
         // Optional: add a subtle animation to the bell
         const bellButton = document.querySelector(".notification-bell");
         if (bellButton) {
@@ -74,13 +74,13 @@ export default function NotificationBell() {
     }
     prevCountRef.current = totalCount;
   }, [totalCount, isOpen]);
-  
+
   // Clean up localStorage storage when using server-based user notifications
   useEffect(() => {
     // Remove localStorage items since we're using server-side storage now
     try {
-      localStorage.removeItem('readNotifications');
-      localStorage.removeItem('deletedNotifications');
+      localStorage.removeItem("readNotifications");
+      localStorage.removeItem("deletedNotifications");
     } catch (error) {
       console.error("Error removing localStorage items:", error);
     }
@@ -99,7 +99,8 @@ export default function NotificationBell() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);  const fetchNotifications = async () => {
+  }, []);
+  const fetchNotifications = async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -114,7 +115,7 @@ export default function NotificationBell() {
 
       // Use notifications directly from the server
       setNotifications(data.notifications || []);
-      
+
       // Total count is already calculated on the server
       setTotalCount(data.total || 0);
     } catch (error: any) {
@@ -126,16 +127,20 @@ export default function NotificationBell() {
   };
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
-  };const markAsRead = async () => {
+  };
+  const markAsRead = async () => {
     try {
       // Update UI first for instant feedback
-      setNotifications(prevNotifications => 
-        prevNotifications.map(notification => ({ ...notification, isRead: true }))
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notification) => ({
+          ...notification,
+          isRead: true,
+        }))
       );
-      
+
       // Update count
       setTotalCount(0);
-      
+
       // Update on server
       await fetch("/api/notifications", {
         method: "POST",
@@ -145,7 +150,7 @@ export default function NotificationBell() {
 
       // Close dropdown
       setIsOpen(false);
-      
+
       // Refresh notifications from server
       setTimeout(() => {
         fetchNotifications();
@@ -161,17 +166,17 @@ export default function NotificationBell() {
     event.stopPropagation();
     try {
       // Find if the notification was unread before removing
-      const targetNotification = notifications.find(n => n.id === id);
+      const targetNotification = notifications.find((n) => n.id === id);
       const wasUnread = targetNotification ? !targetNotification.isRead : false;
-      
+
       // Remove from UI immediately for responsive feel
-      setNotifications(prevNotifications => 
-        prevNotifications.filter(notification => notification.id !== id)
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter((notification) => notification.id !== id)
       );
-      
+
       // Update count if it was unread
       if (wasUnread) {
-        setTotalCount(prevCount => Math.max(0, prevCount - 1));
+        setTotalCount((prevCount) => Math.max(0, prevCount - 1));
       }
 
       // Call API to delete notification on server
@@ -184,7 +189,7 @@ export default function NotificationBell() {
       if (!response.ok) {
         throw new Error("Failed to delete notification");
       }
-      
+
       // If there are more unread notifications, show them by refreshing
       if (totalCount > 1) {
         setTimeout(() => {
@@ -228,7 +233,9 @@ export default function NotificationBell() {
     return priorities[priority] || priority;
   };
   return (
-    <div className="relative" ref={dropdownRef}>      <button
+    <div className="relative" ref={dropdownRef}>
+      {" "}
+      <button
         className="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 notification-bell"
         onClick={toggleDropdown}
         aria-label="การแจ้งเตือน"
@@ -270,21 +277,32 @@ export default function NotificationBell() {
               </div>
             ) : (
               <>
-                {notifications.map((notification) => (                  <div
-                    key={notification.id}                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
-                      !notification.isRead ? "bg-blue-50 notification-highlight" : ""
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
+                      !notification.isRead
+                        ? "bg-blue-50 notification-highlight"
+                        : ""
                     }`}
-                  >                    <Link
-                      href={`/dashboard/complaints/${notification.complaintId || notification.id}`}
+                  >
+                    {" "}
+                    <Link
+                      href={`/dashboard/complaints/${
+                        notification.complaintId || notification.id
+                      }`}
                       className="block"
                       onClick={() => {
                         // Mark this notification as read on the server
                         fetch("/api/notifications", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ action: "markAsRead", id: notification.id }),
+                          body: JSON.stringify({
+                            action: "markAsRead",
+                            id: notification.id,
+                          }),
                         });
-                        
+
                         // Close dropdown
                         setIsOpen(false);
                       }}
@@ -304,7 +322,9 @@ export default function NotificationBell() {
                             )}
                           </p>
                           <div className="flex items-center text-xs text-gray-500">
-                            <span className="mr-2">#{notification.trackingNumber}</span>
+                            <span className="mr-2">
+                              #{notification.trackingNumber}
+                            </span>
                             <span className="mr-2">•</span>
                             <span>{formatDate(notification.createdAt)}</span>
                           </div>
@@ -317,7 +337,8 @@ export default function NotificationBell() {
                           {getPriorityText(notification.priority)}
                         </span>
                       </div>
-                    </Link>                    <button
+                    </Link>{" "}
+                    <button
                       className="absolute top-3 right-3 text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
                       onClick={(e) => deleteNotification(notification.id, e)}
                       aria-label="ลบการแจ้งเตือน"

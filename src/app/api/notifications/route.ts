@@ -6,67 +6,88 @@ import { prisma } from "@/lib/db/prisma";
 // GET /api/notifications - Get user-specific notifications
 export async function GET(request: NextRequest) {
   try {
-    console.log("Fetching notifications - starting");
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session) {
-      console.log("Notifications API: No session found");
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-      console.log("Notifications API: User authenticated:", session.user.id);
+
     const userId = session.user.id;
-    
-    // Debug: Log available prisma client models
-    console.log("Available Prisma models:", Object.keys(prisma).filter(key => !key.startsWith('$') && !key.startsWith('_')));
-    
+
     // First, make sure all new complaints have notifications for this user
     const newComplaints = await prisma.complaint.findMany({
       where: {
-        status: "new"
-        // We can't filter by UserNotification directly here, so we'll check separately
-      }
+        status: "new",
+        userNotifications: {
+          none: {
+            userId,
+          },
+        },
+      },
     });
-      
-    // For now, let's not create any notifications until we fix the model naming issue
-    const complaintsToNotify = [];    // TEMPORARY FIX: Return empty notifications until we resolve the Prisma client issue
-    console.log("Returning empty notifications as a temporary fix");
-    
-    // Instead of using Prisma UserNotification model, let's manually create 
-    // notification data from complaints for now
-    const tempNotifications = [];
-    
-    // Use the first 5 complaints as temporary notifications
-    const recentComplaints = await prisma.complaint.findMany({
+
+    // Create notifications for new complaints that don't have notifications yet
+    if (newComplaints.length > 0) {
+      for (const complaint of newComplaints) {
+        await prisma.userNotification.create({
+          data: {
+            userId,
+            complaintId: complaint.id,
+            isRead: false,
+            isDeleted: false,
+          },
+        });
+      }
+    }
+
+    // Get user's notifications that aren't deleted
+    const userNotifications = await prisma.userNotification.findMany({
       where: {
-        status: "new"
+        userId,
+        isDeleted: false,
+      },
+      include: {
+        complaint: {
+          select: {
+            id: true,
+            subject: true,
+            trackingNumber: true,
+            priority: true,
+            createdAt: true,
+            status: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
+        createdAt: "desc",
       },
-      take: 5
+      take: 5, // Limit to 5 newest notifications
     });
-    
-    // Create temporary notification objects
-    const notifications = recentComplaints.map(complaint => ({
-      id: complaint.id, // Using complaint ID as notification ID for now
-      complaintId: complaint.id,
-      subject: complaint.subject,
-      trackingNumber: complaint.trackingNumber,
-      priority: complaint.priority,
-      createdAt: complaint.createdAt.toISOString(),
-      isRead: false // Default all to unread for now
+
+    // Get total count of user's unread notifications
+    const totalUnreadNotifications = await prisma.userNotification.count({
+      where: {
+        userId,
+        isRead: false,
+        isDeleted: false,
+      },
+    });
+
+    // Transform data format to match what the frontend expects
+    const notifications = userNotifications.map((notification) => ({
+      id: notification.id,
+      complaintId: notification.complaintId,
+      subject: notification.complaint.subject,
+      trackingNumber: notification.complaint.trackingNumber,
+      priority: notification.complaint.priority,
+      createdAt: notification.complaint.createdAt.toISOString(),
+      isRead: notification.isRead,
     }));
-    
-    // Set total count to the number of unread notifications (all of them for now)
-    const totalUnreadNotifications = notifications.length;
 
     return NextResponse.json({
       notifications,
-      total: totalUnreadNotifications
+      total: totalUnreadNotifications,
     });
   } catch (error) {
     console.error("Error fetching notifications:", error);
@@ -81,34 +102,46 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
     const body = await request.json();
     const { action, id } = body;
-      if (action === "markAsRead") {
-      // TEMPORARY FIX: Just return success without actually updating anything
-      console.log("Marking notifications as read (temporary mock)");
-      
+
+    if (action === "markAsRead") {
       if (id) {
-        console.log(`Would mark notification ${id} as read`);
-        // No actual update since we can't access the userNotification model currently
+        // Mark a specific notification as read
+        await prisma.userNotification.update({
+          where: {
+            id,
+            userId, // Ensure this notification belongs to the current user
+          },
+          data: {
+            isRead: true,
+          },
+        });
       } else {
-        console.log("Would mark all notifications as read");
-        // No actual update since we can't access the userNotification model currently
+        // Mark all user's notifications as read
+        await prisma.userNotification.updateMany({
+          where: {
+            userId,
+            isRead: false,
+            isDeleted: false,
+          },
+          data: {
+            isRead: true,
+          },
+        });
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Notifications marked as read" 
+    return NextResponse.json({
+      success: true,
+      message: "Notifications marked as read",
     });
   } catch (error) {
     console.error("Error processing notifications:", error);
@@ -123,13 +156,10 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     // Check if user is authenticated
     if (!session) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
@@ -141,13 +171,22 @@ export async function DELETE(request: NextRequest) {
         { error: "Notification ID is required" },
         { status: 400 }
       );
-    }    // TEMPORARY FIX: Just log the delete operation and return success
-    console.log(`Would delete notification ${id} for user ${userId}`);
-    // No actual update since we can't access the userNotification model currently
+    }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Notification deleted" 
+    // Soft delete the notification (mark as deleted)
+    await prisma.userNotification.update({
+      where: {
+        id,
+        userId, // Ensure this notification belongs to the current user
+      },
+      data: {
+        isDeleted: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Notification deleted",
     });
   } catch (error) {
     console.error("Error deleting notification:", error);
