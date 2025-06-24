@@ -21,11 +21,9 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [error, setError] = useState<string | null>(null);  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   // Initialize SSE connection
@@ -37,9 +35,6 @@ export default function NotificationBell() {
     } catch (error) {
       console.error("Error removing localStorage items:", error);
     }
-    
-    // Initialize audio element
-    audioRef.current = new Audio("/notification-sound.mp3");
     
     // Establish SSE connection
     connectSSE();
@@ -103,14 +98,10 @@ export default function NotificationBell() {
             setNotifications(newNotifications);
             setTotalCount(newTotalCount);
             setIsLoading(false);
-            
-            // Play sound if new notifications arrived (total count increased)
-            if (data.type === 'update' && newTotalCount > prevCountRef.current) {
-              playNotificationSound();
-              
-              // Show browser notification if available and allowed
-              showBrowserNotification(newNotifications);
-            }
+              // Update notification count without playing sounds
+            // if (data.type === 'update' && newTotalCount > prevCountRef.current) {
+              // Notification sounds and browser notifications are disabled
+            // }
             
             prevCountRef.current = newTotalCount;
             break;
@@ -161,57 +152,19 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  
-  // Play notification sound
+    // Notification sound function (disabled)
   const playNotificationSound = () => {
-    if (audioRef.current) {
-      // Reset the audio to the beginning if it's already playing
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      
-      // Play the sound
-      audioRef.current.play().catch(error => {
-        console.error('Failed to play notification sound:', error);
-      });
-    }
+    // Sound notifications have been disabled
+    return;
   };
-  
-  // Show browser notification
+    // Browser notification function (disabled)
   const showBrowserNotification = (notifications: Notification[]) => {
-    // Check if browser notifications are supported and permitted
-    if ('Notification' in window && Notification.permission === 'granted') {
-      // Find the newest unread notification
-      const newestUnread = notifications.find(n => !n.isRead);
-      
-      if (newestUnread) {
-        // Create and show the notification
-        const notification = new Notification('คำร้องเรียนใหม่', {
-          body: newestUnread.subject,
-          icon: '/globe.svg',
-          tag: 'new-complaint',
-        });
-        
-        // Handle notification click
-        notification.onclick = () => {
-          window.focus();
-          setIsOpen(true);
-          if (newestUnread.complaintId) {
-            window.location.href = `/dashboard/complaints/${newestUnread.complaintId}`;
-          }
-        };
-        
-        // Auto close after 5 seconds
-        setTimeout(() => notification.close(), 5000);
-      }
-    }
+    // Browser notifications have been disabled
+    return;
   };
-  
-  // Request notification permission
+    // Notification permission function (disabled)
   const requestNotificationPermission = async () => {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
-    }
+    // Notification permissions have been disabled
     return false;
   };
 
@@ -520,17 +473,7 @@ export default function NotificationBell() {
                       <CheckCircle2 className="h-4 w-4" />
                       อ่านทั้งหมดแล้ว
                     </button>
-                    
-                    {/* Browser Notification Permission Button */}
-                    {'Notification' in window && Notification.permission !== 'granted' && (
-                      <button
-                        onClick={requestNotificationPermission}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
-                        <AlertCircle className="h-4 w-4 inline mr-1" />
-                        เปิดใช้แจ้งเตือน
-                      </button>
-                    )}
+                      {/* Browser Notification Permission Button - Removed */}
                   </div>
                 </div>
               </>
@@ -538,13 +481,6 @@ export default function NotificationBell() {
           </div>
         </div>
       )}
-      
-      {/* Hidden audio element for notification sound */}
-      <audio 
-        ref={audioRef} 
-        src="/notification-sound.mp3" 
-        preload="auto"
-      />
-    </div>
+      </div>
   );
 }
