@@ -191,11 +191,14 @@ export default function ComplaintsList({
       archived: "จัดเก็บแล้ว",
     };
 
-    const badgeClass = (badgeClasses as any)[status] || "bg-gray-100 text-gray-800";
+    const badgeClass =
+      (badgeClasses as any)[status] || "bg-gray-100 text-gray-800";
     const label = statusLabels[status] || status;
 
     return (
-      <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-medium rounded-full ${badgeClass}`}>
+      <span
+        className={`px-2.5 py-1 inline-flex text-xs leading-5 font-medium rounded-full ${badgeClass}`}
+      >
         {label}
       </span>
     );
@@ -229,37 +232,45 @@ export default function ComplaintsList({
   }
 
   return (
-    <div className="space-y-6">      {/* Filter Panel */}
+    <div className="space-y-6">
+      {" "}
+      {/* Filter Panel */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
+        {" "}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5">
           <div className="flex items-center">
             <div className="bg-primary-50 p-3 rounded-full mr-4 text-primary-600">
-              <svg 
-                className="w-6 h-6" 
+              <svg
+                className="w-6 h-6"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="currentColor" 
+                stroke="currentColor"
                 strokeWidth="2"
-                strokeLinecap="round" 
+                strokeLinecap="round"
                 strokeLinejoin="round"
               >
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-medium text-gray-800">ตัวกรองคำร้องเรียน</h3>
-              <p className="text-sm text-gray-500">กรองและค้นหาคำร้องเรียนตามเกณฑ์ที่ต้องการ</p>
+              <h3 className="text-lg font-medium text-gray-800">
+                ตัวกรองคำร้องเรียน
+              </h3>
+              <p className="text-sm text-gray-500">
+                กรองและค้นหาคำร้องเรียนตามเกณฑ์ที่ต้องการ
+              </p>
             </div>
-          </div>          <div className="mt-3 sm:mt-0 bg-primary-50 px-3 py-1.5 rounded-full text-primary-700 font-medium flex items-center">
-            <svg 
-              className="w-4 h-4 mr-1.5" 
+          </div>
+          <div className="mt-3 sm:mt-0 bg-primary-50 px-3 py-1.5 rounded-full text-primary-700 font-medium flex items-center">
+            <svg
+              className="w-4 h-4 mr-1.5"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="currentColor" 
+              stroke="currentColor"
               strokeWidth="2"
-              strokeLinecap="round" 
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -267,8 +278,7 @@ export default function ComplaintsList({
             พบทั้งหมด {pagination.total} รายการ
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
           <div className="relative">
             <label
               htmlFor="category"
@@ -309,7 +319,6 @@ export default function ComplaintsList({
               </div>
             </div>
           </div>
-
           <div className="relative">
             <label
               htmlFor="priority"
@@ -347,7 +356,6 @@ export default function ComplaintsList({
               </div>
             </div>
           </div>
-
           <div className="relative">
             <label
               htmlFor="status"
@@ -386,8 +394,7 @@ export default function ComplaintsList({
                 </svg>
               </div>
             </div>
-          </div>
-
+          </div>{" "}
           <div>
             <label
               htmlFor="search"
@@ -403,26 +410,10 @@ export default function ComplaintsList({
                 value={filters.search}
                 onChange={handleFilterChange}
                 placeholder="ค้นหาเลขติดตาม หรือหัวข้อ..."
-                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
+                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 bg-white"
               />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-              </div>
             </div>
-          </div>
-
+          </div>{" "}
           <div>
             <label
               htmlFor="dateFrom"
@@ -437,28 +428,14 @@ export default function ComplaintsList({
                 name="dateFrom"
                 value={filters.dateFrom}
                 onChange={handleFilterChange}
+                placeholder="วว-ดด-ปปปป"
                 className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
+                
               </div>
             </div>
-          </div>
-
+          </div>{" "}
           <div>
             <label
               htmlFor="dateTo"
@@ -473,55 +450,44 @@ export default function ComplaintsList({
                 name="dateTo"
                 value={filters.dateTo}
                 onChange={handleFilterChange}
+                placeholder="วว-ดด-ปปปป"
                 className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-                  <line x1="16" x2="16" y1="2" y2="6" />
-                  <line x1="8" x2="8" y1="2" y2="6" />
-                  <line x1="3" x2="21" y1="10" y2="10" />
-                </svg>
+                
               </div>
             </div>
-          </div>
-        </div>        <div className="mt-5 flex flex-wrap gap-3">
+          </div>{" "}
+        </div>
+        <div className="mt-5 flex flex-wrap gap-3">
+          {" "}
           <Button
             onClick={applyFilters}
             variant="secondary"
-            className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-sm flex items-center transition-all"
+            className="px-5 py-2.5 bg-black hover:bg-gray-900 text-white rounded-lg shadow-md flex items-center transition-all font-medium"
           >
-            <svg 
-              className="w-4 h-4 mr-2" 
-              xmlns="http://www.w3.org/2000/svg" 
+            <svg
+              className="w-5 h-5 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <circle cx="11" cy="11" r="8"/>
-              <path d="m21 21-4.3-4.3"/>
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
             </svg>
             ค้นหาคำร้องเรียน
           </Button>
           <Button
             onClick={resetFilters}
             variant="outline"
-            className="px-5 py-2.5 rounded-lg border border-gray-300 hover:bg-gray-50 shadow-sm flex items-center transition-all"
+            className="px-5 py-2.5 rounded-lg border border-gray-300 hover:bg-gray-50 shadow-sm flex items-center transition-all font-medium text-gray-700"
           >
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-5 h-5 mr-2"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
@@ -538,11 +504,21 @@ export default function ComplaintsList({
             ล้างตัวกรอง
           </Button>
         </div>
-      </div>      {/* Complaints Table */}
+      </div>{" "}
+      {/* Complaints Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
         <div className="px-5 py-4 border-b border-gray-100 bg-white flex justify-between items-center">
           <h3 className="font-medium text-gray-800 flex items-center">
-            <svg className="w-5 h-5 mr-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              className="w-5 h-5 mr-2 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
             </svg>
@@ -561,7 +537,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <polyline points="16 18 22 12 16 6"></polyline>
                       <polyline points="8 6 2 12 8 18"></polyline>
                     </svg>
@@ -573,7 +558,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
                       <path d="M12 18v-6"></path>
                       <path d="M8 18v-1"></path>
@@ -587,7 +581,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5l6.74-6.76z"></path>
                       <line x1="16" y1="8" x2="2" y2="22"></line>
                       <line x1="17.5" y1="15" x2="9" y2="15"></line>
@@ -600,7 +603,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
@@ -612,7 +624,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="m8 14-6 6h22L8 14z"></path>
                       <path d="M18 14 8 4l-6 6 6 6 10-10 6 6-6 6z"></path>
                     </svg>
@@ -624,8 +645,24 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect
+                        width="18"
+                        height="18"
+                        x="3"
+                        y="4"
+                        rx="2"
+                        ry="2"
+                      ></rect>
                       <line x1="16" y1="2" x2="16" y2="6"></line>
                       <line x1="8" y1="2" x2="8" y2="6"></line>
                       <line x1="3" y1="10" x2="21" y2="10"></line>
@@ -638,7 +675,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center justify-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                     </svg>
                     ไฟล์
@@ -649,7 +695,16 @@ export default function ComplaintsList({
                   className="px-6 py-3.5 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"
                 >
                   <div className="flex items-center justify-center">
-                    <svg className="w-4 h-4 mr-1.5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      className="w-4 h-4 mr-1.5 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <circle cx="12" cy="12" r="3"></circle>
                       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
@@ -661,29 +716,52 @@ export default function ComplaintsList({
             <tbody className="bg-white divide-y divide-gray-100">
               {complaints.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center">                    <div className="flex flex-col items-center justify-center">
+                  <td colSpan={8} className="px-6 py-10 text-center">
+                    {" "}
+                    <div className="flex flex-col items-center justify-center">
                       <div className="bg-gray-50 p-5 rounded-full mb-3">
-                        <svg className="w-16 h-16 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          className="w-16 h-16 text-gray-300"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                           <circle cx="9" cy="7" r="4"></circle>
                           <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
                       </div>
-                      <h3 className="text-gray-600 font-medium text-lg">ไม่พบคำร้องเรียน</h3>
+                      <h3 className="text-gray-600 font-medium text-lg">
+                        ไม่พบคำร้องเรียน
+                      </h3>
                       <p className="text-gray-400 text-sm mt-2 max-w-sm text-center">
-                        ไม่พบคำร้องเรียนที่ตรงกับเงื่อนไขการค้นหา ลองปรับแต่งตัวกรองของคุณหรือล้างตัวกรองเพื่อดูรายการทั้งหมด
+                        ไม่พบคำร้องเรียนที่ตรงกับเงื่อนไขการค้นหา
+                        ลองปรับแต่งตัวกรองของคุณหรือล้างตัวกรองเพื่อดูรายการทั้งหมด
                       </p>
                       <Button
                         onClick={resetFilters}
                         variant="outline"
                         className="mt-4 text-sm font-medium px-4 py-2 rounded-lg border border-primary-300 text-primary-700 hover:bg-primary-50 flex items-center"
                       >
-                        <svg className="w-4 h-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                          <path d="M3 3v5h5"/>
-                          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-                          <path d="M16 16h5v5"/>
+                        <svg
+                          className="w-4 h-4 mr-1.5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                          <path d="M3 3v5h5" />
+                          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                          <path d="M16 16h5v5" />
                         </svg>
                         ล้างตัวกรองทั้งหมด
                       </Button>
@@ -692,7 +770,10 @@ export default function ComplaintsList({
                 </tr>
               ) : (
                 complaints.map((complaint: any) => (
-                  <tr key={complaint.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={complaint.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {complaint.trackingNumber}
@@ -750,7 +831,9 @@ export default function ComplaintsList({
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center space-x-3">                        <a
+                      <div className="flex items-center justify-center space-x-3">
+                        {" "}
+                        <a
                           href={`/dashboard/complaints/${complaint.id}`}
                           className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 p-2 rounded-full transition-colors"
                           title="ดูรายละเอียดคำร้องเรียน"
@@ -770,14 +853,14 @@ export default function ComplaintsList({
                             <circle cx="12" cy="12" r="3"></circle>
                           </svg>
                         </a>
-                        {isAdmin && (
-                          <button                            onClick={() => handleDeleteComplaint(complaint.id)}
-                            className="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-200"
+                        {isAdmin && (                          <button
+                            onClick={() => handleDeleteComplaint(complaint.id)}
+                            className="justify-center rounded-md text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-danger-500 text-white shadow-sm h-10 py-2 px-4 flex items-center gap-2 hover:bg-red-700 transition-all"
                             title="ลบคำร้องเรียน"
                             aria-label="ลบคำร้องเรียน"
                           >
                             <svg
-                              className="w-5 h-5"
+                              className="w-4 h-4"
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
                               fill="none"
@@ -792,6 +875,7 @@ export default function ComplaintsList({
                               <line x1="10" y1="11" x2="10" y2="17"></line>
                               <line x1="14" y1="11" x2="14" y2="17"></line>
                             </svg>
+                            ลบคำร้องเรียน
                           </button>
                         )}
                       </div>

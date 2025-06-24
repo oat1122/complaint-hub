@@ -21,14 +21,14 @@ export async function generateMetadata({
 
   if (!complaint) {
     return {
-      title: "Complaint Not Found",
-      description: "The requested complaint could not be found.",
+      title: "ไม่พบคำร้องเรียน",
+      description: "ไม่พบคำร้องเรียนที่ต้องการค้นหา",
     };
   }
 
   return {
-    title: `Complaint ${complaint.trackingNumber} - Complaint Hub`,
-    description: `View details for complaint ${complaint.trackingNumber}`,
+    title: `คำร้องเรียนหมายเลข ${complaint.trackingNumber} - Complaint Hub`,
+    description: `รายละเอียดคำร้องเรียนหมายเลข ${complaint.trackingNumber}`,
   };
 }
 
@@ -53,10 +53,22 @@ export default async function ComplaintDetailPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Complaint Details</h1>
         {role === "viewer" && (
-          <div className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-md text-sm font-semibold">
-            Read-Only Mode
+          <div className="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-md text-sm font-semibold flex items-center">
+            <svg
+              className="w-4 h-4 mr-1.5"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            โหมดดูอย่างเดียว
           </div>
         )}
       </div>
