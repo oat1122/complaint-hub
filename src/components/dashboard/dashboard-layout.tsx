@@ -152,18 +152,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <span>Complaint Hub</span>
                 </h1>
               </div>
-              <div className="px-4 mb-6">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="ค้นหา..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                </div>
-              </div>
               <nav className="mt-2 flex-1 px-3 space-y-2">
                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
                   เมนูหลัก

@@ -43,33 +43,21 @@ export default function NotificationBell() {
       fetchNotifications();
     }, 60000); // 60 seconds
 
-    return () => clearInterval(intervalId);
-  }, []); // Auto-open dropdown when new notifications arrive
+    return () => clearInterval(intervalId);  }, []); 
+  
+  // Auto-open dropdown when new notifications arrive
   useEffect(() => {
     // Only open if count has increased and we're not already showing the dropdown
     if (totalCount > prevCountRef.current && !isOpen) {
       setIsOpen(true);
 
-      // Show notification sound or animation effect
-      try {
-        // Create sound effect for new notification
-        const audio = new Audio("/notification-sound.mp3"); // You may need to add this file
-        audio.volume = 0.5;
-        audio.play().catch((err) => {
-          // Autoplay may be blocked, which is fine
-          console.log("Notification sound blocked by browser");
-        });
-
-        // Optional: add a subtle animation to the bell
-        const bellButton = document.querySelector(".notification-bell");
-        if (bellButton) {
-          bellButton.classList.add("animate-ring");
-          setTimeout(() => {
-            bellButton.classList.remove("animate-ring");
-          }, 2000);
-        }
-      } catch (err) {
-        // Ignore audio errors
+      // Optional: add a subtle animation to the bell
+      const bellButton = document.querySelector(".notification-bell");
+      if (bellButton) {
+        bellButton.classList.add("animate-ring");
+        setTimeout(() => {
+          bellButton.classList.remove("animate-ring");
+        }, 2000);
       }
     }
     prevCountRef.current = totalCount;
