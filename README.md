@@ -80,16 +80,7 @@ npm run dev
 
 ### Default Users
 
-- **Admin**:
 
-  - Username: `admin`
-  - Password: `admin1234`
-  - Rights: Full access
-
-- **Viewer**:
-  - Username: `Pna`
-  - Password: `Pna1234`
-  - Rights: Read-only access
 
 ## Project Structure
 
