@@ -13,6 +13,8 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState(complaint?.status || "new");
 
   const isAdmin = session?.user?.role === "admin";
   if (!complaint) {
@@ -59,6 +61,33 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
     }
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!isAdmin) return;
+
+    try {
+      setIsUpdating(true);
+
+      const response = await fetch(`/api/complaint/${complaint.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      setCurrentStatus(newStatus);
+      router.refresh();
+    } catch (error: any) {
+      alert(`Error: ${error.message || "Failed to update status"}`);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -93,6 +122,37 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
         return "bg-orange-100 text-orange-800";
       case "urgent":
         return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const statuses: Record<string, string> = {
+      new: "New",
+      received: "Received",
+      discussing: "Under Discussion",
+      processing: "In Process",
+      resolved: "Resolved",
+      archived: "Archived",
+    };
+    return statuses[status] || status;
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "new":
+        return "bg-green-100 text-green-800";
+      case "received":
+        return "bg-blue-100 text-blue-800";
+      case "discussing":
+        return "bg-purple-100 text-purple-800";
+      case "processing":
+        return "bg-yellow-100 text-yellow-800";
+      case "resolved":
+        return "bg-teal-100 text-teal-800";
+      case "archived":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -171,21 +231,46 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
               <div className="flex flex-col">
                 <span className="text-xs text-gray-500">Status</span>
                 <span
-                  className={`px-2 py-1 rounded text-xs font-medium ${
-                    complaint.status === "new"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
+                  className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(
+                    complaint.status
+                  )}`}
                 >
-                  {complaint.status === "new" ? "New" : "Archived"}
+                  {getStatusLabel(complaint.status)}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Subject & Description */}
-        <div className="p-6">
+        {/* Subject & Description */}        <div className="p-6">
+          {/* Status update section for admin */}
+          {isAdmin && (
+            <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-lg font-semibold mb-3">Update Status</h3>
+              <div className="flex flex-wrap gap-2">
+                {["new", "received", "discussing", "processing", "resolved", "archived"].map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => handleStatusChange(status)}
+                    disabled={isUpdating || currentStatus === status}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      currentStatus === status
+                        ? `${getStatusBadgeClass(status)} border-2 border-gray-400`
+                        : "bg-white border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {getStatusLabel(status)}
+                  </button>
+                ))}
+              </div>
+              {isUpdating && (
+                <div className="mt-2 text-sm text-gray-500">
+                  Updating status...
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mb-6">
             <h3 className="text-lg font-semibold mb-2">Subject</h3>
             <p className="text-gray-800">{complaint.subject}</p>

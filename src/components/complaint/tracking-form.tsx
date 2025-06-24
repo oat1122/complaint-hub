@@ -64,6 +64,56 @@ export default function TrackingForm() {
     return categories[category] || category;
   };
 
+  const getStatusLabel = (status: string) => {
+    const statuses: Record<string, string> = {
+      new: "Submitted",
+      received: "Received",
+      discussing: "Under Discussion",
+      processing: "In Process",
+      resolved: "Resolved",
+      archived: "Archived",
+    };
+    return statuses[status] || status;
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "new":
+        return "bg-blue-500 text-white";
+      case "received":
+        return "bg-indigo-500 text-white";
+      case "discussing":
+        return "bg-purple-500 text-white";
+      case "processing":
+        return "bg-yellow-500 text-white";
+      case "resolved":
+        return "bg-green-500 text-white";
+      case "archived":
+        return "bg-gray-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "new":
+        return "bg-blue-500";
+      case "received":
+        return "bg-indigo-500";
+      case "discussing":
+        return "bg-purple-500";
+      case "processing":
+        return "bg-yellow-500";
+      case "resolved":
+        return "bg-green-500";
+      case "archived":
+        return "bg-gray-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
   const onSubmit = async (data: TrackingFormValues) => {
     try {
       setIsLoading(true);
@@ -187,15 +237,39 @@ export default function TrackingForm() {
                   {complaint.attachments.length} file(s) attached
                 </p>
               </div>
-            )}
-
-            <div className="bg-white p-4 rounded border border-gray-200">
+            )}            <div className="bg-white p-4 rounded border border-gray-200">
               <p className="text-sm text-gray-500 mb-2">Status</p>
               <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                <span className="font-medium">
-                  {complaint.status === "new" ? "Submitted" : "Archived"}
+                <div
+                  className={`w-3 h-3 rounded-full ${getStatusIcon(
+                    complaint.status
+                  )} mr-2`}
+                ></div>
+                <span className={`px-2 py-1 rounded-md text-sm font-medium ${getStatusBadgeClass(complaint.status)}`}>
+                  {getStatusLabel(complaint.status)}
                 </span>
+              </div>
+              
+              {/* Status timeline */}
+              <div className="mt-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className={`w-4 h-4 rounded-full flex-shrink-0 ${complaint.status !== "new" ? "bg-gray-300" : "bg-blue-500"}`}></div>
+                  <div className={`h-1 flex-grow ${complaint.status !== "new" ? "bg-gray-300" : "bg-blue-500"}`}></div>
+                  <div className={`w-4 h-4 rounded-full flex-shrink-0 ${["received", "discussing", "processing", "resolved", "archived"].includes(complaint.status) ? "bg-indigo-500" : "bg-gray-300"}`}></div>
+                  <div className={`h-1 flex-grow ${["discussing", "processing", "resolved", "archived"].includes(complaint.status) ? "bg-purple-500" : "bg-gray-300"}`}></div>
+                  <div className={`w-4 h-4 rounded-full flex-shrink-0 ${["discussing", "processing", "resolved", "archived"].includes(complaint.status) ? "bg-purple-500" : "bg-gray-300"}`}></div>
+                  <div className={`h-1 flex-grow ${["processing", "resolved", "archived"].includes(complaint.status) ? "bg-yellow-500" : "bg-gray-300"}`}></div>
+                  <div className={`w-4 h-4 rounded-full flex-shrink-0 ${["processing", "resolved", "archived"].includes(complaint.status) ? "bg-yellow-500" : "bg-gray-300"}`}></div>
+                  <div className={`h-1 flex-grow ${["resolved", "archived"].includes(complaint.status) ? "bg-green-500" : "bg-gray-300"}`}></div>
+                  <div className={`w-4 h-4 rounded-full flex-shrink-0 ${["resolved", "archived"].includes(complaint.status) ? "bg-green-500" : "bg-gray-300"}`}></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 px-1">
+                  <span>Submitted</span>
+                  <span>Received</span>
+                  <span>Discussing</span>
+                  <span>Processing</span>
+                  <span>Resolved</span>
+                </div>
               </div>
             </div>
           </div>

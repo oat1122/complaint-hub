@@ -95,6 +95,10 @@ enum Priority {
 
 enum Status {
   new
+  received   // รับเรื่องแล้ว
+  discussing // กำลังหารือ
+  processing // กำลังแก้ไข
+  resolved   // แก้ไขเสร็จสิ้น
   archived
 }
 
