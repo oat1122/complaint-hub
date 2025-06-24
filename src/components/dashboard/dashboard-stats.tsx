@@ -249,78 +249,7 @@ export default function DashboardStats({ initialStats }: DashboardStatsProps) {
         </div>
       </div>
 
-      {/* Daily Trend */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-gray-800">
-            แนวโน้มคำร้องเรียนรายวัน
-          </h3>
-          <select className="text-sm border border-gray-300 rounded-md px-2 py-1">
-            <option>30 วัน</option>
-            <option>60 วัน</option>
-            <option>90 วัน</option>
-          </select>
-        </div>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={dailyData}
-              margin={{ top: 5, right: 30, left: 20, bottom: 25 }}
-            >
-              <defs>
-                <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                vertical={false}
-                opacity={0.3}
-              />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "#4b5563", fontSize: 12 }}
-                axisLine={{ stroke: "#e5e7eb" }}
-                tickLine={false}
-                dy={10}
-              />
-              <YAxis
-                tick={{ fill: "#4b5563", fontSize: 12 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "white",
-                  borderRadius: "8px",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                  border: "1px solid #e5e7eb",
-                }}
-                formatter={(value: any) => [`${value} คำร้อง`, "จำนวน"]}
-                labelFormatter={(label) => `วันที่: ${label}`}
-              />
-              <Area
-                type="monotone"
-                dataKey="count"
-                stroke="#3b82f6"
-                strokeWidth={3}
-                fillOpacity={1}
-                fill="url(#colorCount)"
-                activeDot={{ r: 6, stroke: "white", strokeWidth: 2 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="count"
-                stroke="#3b82f6"
-                strokeWidth={3}
-                dot={{ r: 3, fill: "white", stroke: "#3b82f6", strokeWidth: 2 }}
-                activeDot={{ r: 6, stroke: "white", strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      {/* Daily Trend */}      {/* Removed the daily trend chart section since we're using DailyComplaintTrendChart component */}
     </div>
   );
 }

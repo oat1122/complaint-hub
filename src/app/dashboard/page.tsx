@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth/auth-options";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileText, PlusCircle, BarChart4 } from "lucide-react";
+import DailyComplaintTrendChartWrapper from "@/components/dashboard/daily-complaint-trend-chart-wrapper";
 
 export const metadata: Metadata = {
   title: "Dashboard - Complaint Hub",
@@ -217,9 +218,13 @@ export default async function Dashboard() {
                   : 0}
                 %
               </span>
-              <span className="text-gray-500"> ของทั้งหมด</span>
-            </div>
+              <span className="text-gray-500"> ของทั้งหมด</span>            </div>
           </div>
+        </div>
+      </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="col-span-1 lg:col-span-2">
+          <DailyComplaintTrendChartWrapper />
         </div>
       </div>
 
