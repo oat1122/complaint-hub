@@ -15,8 +15,9 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   // Get complaint data
+  const { id } = params;
   const complaint = await prisma.complaint.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!complaint) {
@@ -38,8 +39,9 @@ export default async function ComplaintDetailPage({ params }: PageProps) {
   const role = session?.user?.role;
 
   // Get complaint with attachments
+  const { id } = params;
   const complaint = await prisma.complaint.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       attachments: true,
     },

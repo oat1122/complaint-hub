@@ -5,16 +5,16 @@
 export function playNotificationSound(): Promise<void> {
   return new Promise((resolve) => {
     try {
-      const audio = new Audio('/notification-sound.mp3');
+      const audio = new Audio("/notification-sound.mp3");
       audio.volume = 0.5;
-      
+
       audio.onended = () => {
         resolve();
       };
-      
+
       // Some browsers require user interaction before playing audio
       const playPromise = audio.play();
-      
+
       if (playPromise !== undefined) {
         playPromise
           .then(() => {

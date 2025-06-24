@@ -431,9 +431,7 @@ export default function ComplaintsList({
                 placeholder="วว-ดด-ปปปป"
                 className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
               />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                
-              </div>
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"></div>
             </div>
           </div>{" "}
           <div>
@@ -453,9 +451,7 @@ export default function ComplaintsList({
                 placeholder="วว-ดด-ปปปป"
                 className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
               />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                
-              </div>
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"></div>
             </div>
           </div>{" "}
         </div>
@@ -852,15 +848,15 @@ export default function ComplaintsList({
                             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
                           </svg>
-                        </a>
-                        {isAdmin && (                          <button
+                        </a>                        {isAdmin && (
+                          <button
                             onClick={() => handleDeleteComplaint(complaint.id)}
-                            className="justify-center rounded-md text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer bg-danger-500 text-white shadow-sm h-10 py-2 px-4 flex items-center gap-2 hover:bg-red-700 transition-all"
+                            className="p-2 rounded-full bg-red-500 text-white hover:bg-red-700 transition-all"
                             title="ลบคำร้องเรียน"
                             aria-label="ลบคำร้องเรียน"
                           >
                             <svg
-                              className="w-4 h-4"
+                              className="w-5 h-5"
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
                               fill="none"
@@ -875,7 +871,6 @@ export default function ComplaintsList({
                               <line x1="10" y1="11" x2="10" y2="17"></line>
                               <line x1="14" y1="11" x2="14" y2="17"></line>
                             </svg>
-                            ลบคำร้องเรียน
                           </button>
                         )}
                       </div>

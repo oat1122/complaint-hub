@@ -12,7 +12,7 @@ interface Params {
 // GET complaint by ID
 export async function GET(request: Request, { params }: Params) {
   try {
-    const id = params.id;
+    const { id } = params;
 
     const complaint = await prisma.complaint.findUnique({
       where: { id },
@@ -45,7 +45,7 @@ export async function DELETE(request: Request, { params }: Params) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const id = params.id;
+    const { id } = params;
 
     // Check if complaint exists
     const complaint = await prisma.complaint.findUnique({
@@ -84,7 +84,7 @@ export async function PATCH(request: Request, { params }: Params) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    const id = params.id;
+    const { id } = params;
     const data = await request.json();
 
     // Validate status
