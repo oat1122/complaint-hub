@@ -106,8 +106,16 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         throw new Error(errorData.error || "Failed to save settings");
       }
       
-      setMessage({ text: "Settings saved successfully", type: "success" });
+      setMessage({ text: "Settings saved successfully. The changes will apply on your next page reload.", type: "success" });
       clearMessage();
+      
+      // If the items per page was changed, we need to reload the dashboard pages to apply the new setting
+      if (initialSettings && initialSettings.itemsPerPage !== settings.itemsPerPage) {
+        setTimeout(() => {
+          // Soft reload to apply the new settings
+          window.location.href = '/dashboard/complaints';
+        }, 1500);
+      }
     } catch (error: any) {
       console.error("Error saving settings:", error);
       setMessage({ text: `Error: ${error.message || "Failed to save settings"}`, type: "error" });
@@ -259,16 +267,26 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Default Items Per Page
               </label>
+              <p className="text-xs text-blue-600 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="inline-block h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                จำนวนรายการต่อหน้าเริ่มต้นสำหรับหน้ารายการคำร้องเรียน
+              </p>
               <select 
                 className={`w-full sm:w-64 px-3 py-2 border rounded-md ${
                   formErrors.itemsPerPage ? "border-red-500" : "border-gray-300"
                 }`}
                 value={settings.itemsPerPage}
-                onChange={(e) => {
-                  setSettings({...settings, itemsPerPage: parseInt(e.target.value)});
-                  const updatedErrors = {...formErrors};
-                  delete updatedErrors.itemsPerPage;
-                  setFormErrors(updatedErrors);
+                onChange={(e) => {                      const value = parseInt(e.target.value);
+                      setSettings({...settings, itemsPerPage: value});
+                      
+                      // Remove the error if it exists
+                      if (formErrors.itemsPerPage) {
+                        const updatedErrors = {...formErrors};
+                        delete updatedErrors.itemsPerPage;
+                        setFormErrors(updatedErrors);
+                      }
                 }}
               >
                 <option value="5">5 items</option>
@@ -398,7 +416,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
                 variant="destructive"
                 onClick={() => openConfirmationDialog("delete")}
                 disabled={isDeleting}
-                className="min-w-[120px]"
+                className="min-w-[120px] font-medium text-base"
               >
                 {isDeleting ? (
                   <>
@@ -416,7 +434,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         <Button 
           onClick={handleSaveSettings} 
           disabled={isSaving} 
-          className="min-w-[120px]"
+          className="min-w-[120px] font-medium text-base"
         >
           {isSaving ? (
             <>
@@ -438,12 +456,14 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
             <Button
               variant="outline"
               onClick={() => setConfirmDialog({...confirmDialog, isOpen: false})}
+              className="font-medium"
             >
               Cancel
             </Button>
             <Button
               variant={confirmDialog.destructive ? "destructive" : "default"}
               onClick={handleConfirmAction}
+              className="font-medium"
             >
               {confirmDialog.confirmText}
             </Button>

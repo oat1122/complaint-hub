@@ -13,10 +13,18 @@ export default async function ComplaintsPage() {
   // Get authenticated session
   const session = await getServerSession(authOptions);
   const role = session?.user?.role;
+  
+  // Get system settings for items per page
+  let settings = await prisma.settings.findUnique({
+    where: { id: "singleton" }
+  });
+  
+  // Default to 10 items per page if no settings found
+  const itemsPerPage = settings?.itemsPerPage || 10;
 
   // Get initial complaints (first page)
   const complaints = await prisma.complaint.findMany({
-    take: 10,
+    take: itemsPerPage,
     orderBy: {
       createdAt: "desc",
     },
@@ -50,8 +58,8 @@ export default async function ComplaintsPage() {
     pagination: {
       total: totalCount,
       page: 1,
-      limit: 10,
-      pages: Math.ceil(totalCount / 10),
+      limit: itemsPerPage,
+      pages: Math.ceil(totalCount / itemsPerPage),
     },
     summary: statusCounts
   };

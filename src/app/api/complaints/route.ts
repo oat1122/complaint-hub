@@ -12,11 +12,19 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
+    // Get system settings for default items per page
+    let settings = await prisma.settings.findUnique({
+      where: { id: "singleton" }
+    });
+    
+    // Use default if no settings found
+    const defaultLimit = settings?.itemsPerPage || 10;
+
     const { searchParams } = new URL(request.url);
 
     // Parse query parameters
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+    const limit = parseInt(searchParams.get("limit") || defaultLimit.toString());
     const category = searchParams.get("category");
     const priority = searchParams.get("priority");
     const status = searchParams.get("status");
