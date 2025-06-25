@@ -11,33 +11,45 @@ export async function GET() {
     // Check if user is authenticated and is an admin
     if (!session || session.user.role !== "admin") {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Unauthorized - Admin access required" },
         { status: 401 }
       );
     }
 
-    // Get settings from database
+    // Try to get settings from database
     let settings = await prisma.settings.findUnique({
       where: { id: "singleton" }
     });
 
-    // Create default settings if not exists
+    // If no settings exist, create default settings
     if (!settings) {
       settings = await prisma.settings.create({
         data: {
           id: "singleton",
           itemsPerPage: 10,
           autoArchiveDays: 90,
-          enableAutoArchive: false
+          enableAutoArchive: false,
         }
       });
     }
 
-    return NextResponse.json(settings);
+    return NextResponse.json({
+      itemsPerPage: settings.itemsPerPage,
+      autoArchiveDays: settings.autoArchiveDays,
+      enableAutoArchive: settings.enableAutoArchive,
+      lastUpdated: settings.lastUpdated,
+    });
   } catch (error) {
     console.error("Error fetching settings:", error);
+    
+    // Return error with default settings
     return NextResponse.json(
-      { error: "Failed to fetch settings" },
+      { 
+        error: "Failed to fetch settings from database",
+        itemsPerPage: 10,
+        autoArchiveDays: 90,
+        enableAutoArchive: false,
+      },
       { status: 500 }
     );
   }
@@ -51,7 +63,7 @@ export async function PUT(request: NextRequest) {
     // Check if user is authenticated and is an admin
     if (!session || session.user.role !== "admin") {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Unauthorized - Admin access required" },
         { status: 401 }
       );
     }
@@ -65,33 +77,54 @@ export async function PUT(request: NextRequest) {
       typeof data.enableAutoArchive !== "boolean"
     ) {
       return NextResponse.json(
-        { error: "Invalid request data" },
+        { error: "Invalid request data - missing or incorrect fields" },
         { status: 400 }
       );
     }
 
-    // Update settings in database
+    // Validate ranges
+    if (data.itemsPerPage < 5 || data.itemsPerPage > 100) {
+      return NextResponse.json(
+        { error: "Items per page must be between 5 and 100" },
+        { status: 400 }
+      );
+    }
+
+    if (data.autoArchiveDays < 1 || data.autoArchiveDays > 365) {
+      return NextResponse.json(
+        { error: "Auto archive days must be between 1 and 365" },
+        { status: 400 }
+      );
+    }
+
+    // Upsert settings in database
     const settings = await prisma.settings.upsert({
       where: { id: "singleton" },
       update: {
         itemsPerPage: data.itemsPerPage,
         autoArchiveDays: data.autoArchiveDays,
         enableAutoArchive: data.enableAutoArchive,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
       create: {
         id: "singleton",
         itemsPerPage: data.itemsPerPage,
         autoArchiveDays: data.autoArchiveDays,
-        enableAutoArchive: data.enableAutoArchive
+        enableAutoArchive: data.enableAutoArchive,
       }
     });
 
-    return NextResponse.json(settings);
+    return NextResponse.json({
+      success: true,
+      itemsPerPage: settings.itemsPerPage,
+      autoArchiveDays: settings.autoArchiveDays,
+      enableAutoArchive: settings.enableAutoArchive,
+      lastUpdated: settings.lastUpdated,
+    });
   } catch (error) {
     console.error("Error updating settings:", error);
     return NextResponse.json(
-      { error: "Failed to update settings" },
+      { error: "Failed to update settings in database" },
       { status: 500 }
     );
   }
@@ -105,7 +138,7 @@ export async function POST(request: NextRequest) {
     // Check if user is authenticated and is an admin
     if (!session || session.user.role !== "admin") {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Unauthorized - Admin access required" },
         { status: 401 }
       );
     }
@@ -113,22 +146,33 @@ export async function POST(request: NextRequest) {
     const { action } = await request.json();
 
     if (action === "archiveOld") {
-      // Get settings from database
-      const settings = await prisma.settings.findUnique({
+      // Get current settings to determine archive threshold
+      let settings = await prisma.settings.findUnique({
         where: { id: "singleton" }
       });
-      
-      const daysToArchive = settings?.autoArchiveDays || 90;
+
+      if (!settings) {
+        settings = await prisma.settings.create({
+          data: {
+            id: "singleton",
+            itemsPerPage: 10,
+            autoArchiveDays: 90,
+            enableAutoArchive: false,
+          }
+        });
+      }
+
+      const daysToArchive = settings.autoArchiveDays;
       
       // Calculate the date threshold
       const thresholdDate = new Date();
       thresholdDate.setDate(thresholdDate.getDate() - daysToArchive);
       
-      // Archive old complaints
+      // Archive old complaints (only those not already archived)
       const result = await prisma.complaint.updateMany({
         where: {
           createdAt: { lt: thresholdDate },
-          status: { in: ["new", "received", "discussing", "processing", "resolved"] }
+          status: { not: "archived" }
         },
         data: {
           status: "archived"
@@ -137,28 +181,47 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ 
         success: true, 
-        message: `${result.count} complaints archived` 
+        count: result.count,
+        message: `Successfully archived ${result.count} complaint(s) older than ${daysToArchive} days`
       });
+
     } else if (action === "deleteArchived") {
-      // Delete all archived complaints
+      // Count first for reporting
+      const count = await prisma.complaint.count({
+        where: { status: "archived" }
+      });
+
+      if (count === 0) {
+        return NextResponse.json({ 
+          success: true, 
+          count: 0,
+          message: "No archived complaints found to delete"
+        });
+      }
+
+      // Delete all archived complaints and their attachments
+      // Prisma will handle cascade deletion of attachments due to our schema
       const result = await prisma.complaint.deleteMany({
         where: { status: "archived" }
       });
 
       return NextResponse.json({ 
         success: true, 
-        message: `${result.count} archived complaints deleted` 
+        count: result.count,
+        message: `Successfully deleted ${result.count} archived complaint(s) and their attachments`
       });
+
+    } else {
+      return NextResponse.json(
+        { error: "Invalid action. Supported actions: 'archiveOld', 'deleteArchived'" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json(
-      { error: "Invalid action" },
-      { status: 400 }
-    );
   } catch (error) {
-    console.error("Error processing action:", error);
+    console.error("Error processing settings action:", error);
     return NextResponse.json(
-      { error: "Failed to process action" },
+      { error: "Failed to process action - database error" },
       { status: 500 }
     );
   }
