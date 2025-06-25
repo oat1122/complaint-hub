@@ -289,7 +289,6 @@ export default function ComplaintsList({
       {" "}
       {/* Filter Panel */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
-        {" "}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5">
           <div className="flex items-center">
             <div className="bg-primary-50 p-3 rounded-full mr-4 text-primary-600">
@@ -315,7 +314,7 @@ export default function ComplaintsList({
               </p>
             </div>
           </div>
-          <div className="mt-3 sm:mt-0 bg-primary-50 px-3 py-1.5 rounded-full text-primary-700 font-medium flex items-center">
+          <div className="mt-3 sm:mt-0 bg-primary-50 px-4 py-2 rounded-full text-primary-700 font-medium flex items-center">
             <svg
               className="w-4 h-4 mr-1.5"
               xmlns="http://www.w3.org/2000/svg"
@@ -328,14 +327,14 @@ export default function ComplaintsList({
             >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            พบทั้งหมด {pagination.total} รายการ
+            พบทั้งหมด <span className="font-bold">{pagination.total}</span> รายการ
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
           <div className="relative">
             <label
               htmlFor="category"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className={`block text-sm font-medium mb-1 ${filters.category ? 'text-primary-700' : 'text-gray-700'}`}
             >
               หมวดหมู่
             </label>
@@ -345,7 +344,7 @@ export default function ComplaintsList({
                 name="category"
                 value={filters.category}
                 onChange={handleFilterChange}
-                className="w-full pl-3 pr-10 py-2.5 rounded-lg border border-gray-300 bg-white shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 appearance-none"
+                className={`w-full pl-3 pr-10 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 appearance-none ${filters.category ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white'}`}
               >
                 <option value="">ทั้งหมด</option>
                 <option value="technical">ปัญหาทางเทคนิค</option>
@@ -375,7 +374,7 @@ export default function ComplaintsList({
           <div className="relative">
             <label
               htmlFor="priority"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className={`block text-sm font-medium mb-1 ${filters.priority ? 'text-primary-700' : 'text-gray-700'}`}
             >
               ความสำคัญ
             </label>
@@ -385,7 +384,7 @@ export default function ComplaintsList({
                 name="priority"
                 value={filters.priority}
                 onChange={handleFilterChange}
-                className="w-full pl-3 pr-10 py-2.5 rounded-lg border border-gray-300 bg-white shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 appearance-none"
+                className={`w-full pl-3 pr-10 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 appearance-none ${filters.priority ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white'}`}
               >
                 <option value="">ทั้งหมด</option>
                 <option value="low">ต่ำ</option>
@@ -412,7 +411,7 @@ export default function ComplaintsList({
           <div className="relative">
             <label
               htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className={`block text-sm font-medium mb-1 ${filters.status ? 'text-primary-700' : 'text-gray-700'}`}
             >
               สถานะ
             </label>
@@ -422,7 +421,7 @@ export default function ComplaintsList({
                 name="status"
                 value={filters.status}
                 onChange={handleFilterChange}
-                className="w-full pl-3 pr-10 py-2.5 rounded-lg border border-gray-300 bg-white shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 appearance-none"
+                className={`w-full pl-3 pr-10 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 appearance-none ${filters.status ? 'border-primary-500 bg-primary-50' : 'border-gray-300 bg-white'}`}
               >
                 <option value="">ทั้งหมด</option>
                 <option value="new">ใหม่</option>
@@ -447,15 +446,16 @@ export default function ComplaintsList({
                 </svg>
               </div>
             </div>
-          </div>{" "}
+          </div>
           <div>
             <label
               htmlFor="search"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className={`block text-sm font-medium mb-1 ${filters.search ? 'text-primary-700' : 'text-gray-700'}`}
             >
               ค้นหา
             </label>
             <div className="relative">
+              
               <input
                 type="text"
                 id="search"
@@ -463,7 +463,7 @@ export default function ComplaintsList({
                 value={filters.search}
                 onChange={handleFilterChange}
                 placeholder="ค้นหาเลขติดตาม หรือหัวข้อ..."
-                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 bg-white"
+                className={`w-full pl-3 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.search ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
               />
             </div>
           </div>{" "}
@@ -472,12 +472,9 @@ export default function ComplaintsList({
               htmlFor="dateFrom"
               className={`block text-sm font-medium mb-1 ${filters.dateFrom ? 'text-primary-700' : 'text-gray-700'}`}
             >
-              จากวันที่ 
+              จากวันที่
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                
-              </div>
               <input
                 type="date"
                 id="dateFrom"
@@ -485,7 +482,7 @@ export default function ComplaintsList({
                 value={filters.dateFrom}
                 onChange={handleFilterChange}
                 placeholder="วว-ดด-ปปปป"
-                className={`w-full pl-10 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.dateFrom ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
+                className={`w-full pl-3 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.dateFrom ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
               />
             </div>
           </div>{" "}
@@ -494,12 +491,9 @@ export default function ComplaintsList({
               htmlFor="dateTo"
               className={`block text-sm font-medium mb-1 ${filters.dateTo ? 'text-primary-700' : 'text-gray-700'}`}
             >
-              ถึงวันที่ 
+              ถึงวันที่
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                
-              </div>
               <input
                 type="date"
                 id="dateTo"
@@ -507,44 +501,98 @@ export default function ComplaintsList({
                 value={filters.dateTo}
                 onChange={handleFilterChange}
                 placeholder="วว-ดด-ปปปป"
-                className={`w-full pl-10 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.dateTo ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
+                className={`w-full pl-3 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.dateTo ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
               />
             </div>
           </div>{" "}
         </div>
         {/* Date quick selections */}
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
+          <p className="text-xs text-gray-500 w-full mb-1">เลือกช่วงวันแบบรวดเร็ว:</p>
           <button
             onClick={setDateToday}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
           >
+            <svg 
+              className="w-3 h-3 mr-1" 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M18 11.5H6M18 7.5H6M18 15.5H6M6 19.5h12"></path>
+            </svg>
             วันนี้
           </button>
           <button
             onClick={setDateYesterday}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
           >
+            <svg 
+              className="w-3 h-3 mr-1" 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M13 5H9.5M13 9H6.5M13 13H6.5M13 17H6.5M17 5v12"></path>
+            </svg>
             เมื่อวาน
           </button>
           <button
             onClick={setDateThisWeek}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
           >
+            <svg 
+              className="w-3 h-3 mr-1" 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
             สัปดาห์นี้
           </button>
           <button
             onClick={setDateThisMonth}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
           >
+            <svg 
+              className="w-3 h-3 mr-1" 
+              xmlns="http://www.w3.org/2000/svg" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
             เดือนนี้
           </button>
         </div>
-        <div className="mt-5 flex flex-wrap gap-3">
-          {" "}
+        <div className="mt-6 flex flex-wrap gap-3 pt-4 border-t border-gray-100">
           <Button
             onClick={applyFilters}
             variant="secondary"
-            className="px-5 py-2.5 bg-black hover:bg-gray-900 text-white rounded-lg shadow-md flex items-center transition-all font-medium"
+            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-md flex items-center transition-all font-medium"
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -565,6 +613,8 @@ export default function ComplaintsList({
             onClick={resetFilters}
             variant="outline"
             className="px-5 py-2.5 rounded-lg border border-gray-300 hover:bg-gray-50 shadow-sm flex items-center transition-all font-medium text-gray-700"
+            aria-label="ล้างตัวกรองทั้งหมด"
+            title="ล้างตัวกรองทั้งหมด"
           >
             <svg
               className="w-5 h-5 mr-2"
@@ -583,6 +633,7 @@ export default function ComplaintsList({
             </svg>
             ล้างตัวกรอง
           </Button>
+         
         </div>
       </div>{" "}
       {/* Complaints Table */}
