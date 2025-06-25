@@ -96,6 +96,54 @@ export default function ComplaintsList({
     fetchComplaints(1);
   };
 
+  // Date quick selection presets
+  const setDateToday = () => {
+    const today = new Date().toISOString().split("T")[0];
+    setFilters((prev) => ({
+      ...prev,
+      dateFrom: today,
+      dateTo: today,
+    }));
+    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+  };
+
+  const setDateYesterday = () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split("T")[0];
+    setFilters((prev) => ({
+      ...prev,
+      dateFrom: yesterdayStr,
+      dateTo: yesterdayStr,
+    }));
+    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+  };
+
+  const setDateThisWeek = () => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() || today.getDate() - 6); // Adjust for week starting on Monday
+
+    setFilters((prev) => ({
+      ...prev,
+      dateFrom: startOfWeek.toISOString().split("T")[0],
+      dateTo: today.toISOString().split("T")[0],
+    }));
+    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+  };
+
+  const setDateThisMonth = () => {
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    setFilters((prev) => ({
+      ...prev,
+      dateFrom: startOfMonth.toISOString().split("T")[0],
+      dateTo: today.toISOString().split("T")[0],
+    }));
+    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+  };
+
   const handleDeleteComplaint = async (id: string) => {
     if (!isAdmin) return;
 
@@ -202,6 +250,11 @@ export default function ComplaintsList({
         {label}
       </span>
     );
+  };
+
+  // Helper function to check if date filters are applied
+  const isDateFiltered = () => {
+    return Boolean(filters.dateFrom || filters.dateTo);
   };
 
   if (isLoading && !complaints.length) {
@@ -417,11 +470,14 @@ export default function ComplaintsList({
           <div>
             <label
               htmlFor="dateFrom"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className={`block text-sm font-medium mb-1 ${filters.dateFrom ? 'text-primary-700' : 'text-gray-700'}`}
             >
-              จากวันที่
+              จากวันที่ 
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                
+              </div>
               <input
                 type="date"
                 id="dateFrom"
@@ -429,19 +485,21 @@ export default function ComplaintsList({
                 value={filters.dateFrom}
                 onChange={handleFilterChange}
                 placeholder="วว-ดด-ปปปป"
-                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
+                className={`w-full pl-10 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.dateFrom ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
               />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"></div>
             </div>
           </div>{" "}
           <div>
             <label
               htmlFor="dateTo"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className={`block text-sm font-medium mb-1 ${filters.dateTo ? 'text-primary-700' : 'text-gray-700'}`}
             >
-              ถึงวันที่
+              ถึงวันที่ 
             </label>
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                
+              </div>
               <input
                 type="date"
                 id="dateTo"
@@ -449,11 +507,37 @@ export default function ComplaintsList({
                 value={filters.dateTo}
                 onChange={handleFilterChange}
                 placeholder="วว-ดด-ปปปป"
-                className="w-full pl-10 pr-3 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20"
+                className={`w-full pl-10 pr-3 py-2.5 rounded-lg border shadow-sm focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-20 ${filters.dateTo ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}`}
               />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"></div>
             </div>
           </div>{" "}
+        </div>
+        {/* Date quick selections */}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            onClick={setDateToday}
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+          >
+            วันนี้
+          </button>
+          <button
+            onClick={setDateYesterday}
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+          >
+            เมื่อวาน
+          </button>
+          <button
+            onClick={setDateThisWeek}
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+          >
+            สัปดาห์นี้
+          </button>
+          <button
+            onClick={setDateThisMonth}
+            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
+          >
+            เดือนนี้
+          </button>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
           {" "}
