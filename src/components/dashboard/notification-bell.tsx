@@ -98,10 +98,6 @@ export default function NotificationBell() {
             setNotifications(newNotifications);
             setTotalCount(newTotalCount);
             setIsLoading(false);
-              // Update notification count without playing sounds
-            // if (data.type === 'update' && newTotalCount > prevCountRef.current) {
-              // Notification sounds and browser notifications are disabled
-            // }
             
             prevCountRef.current = newTotalCount;
             break;
@@ -152,48 +148,8 @@ export default function NotificationBell() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-    // Notification sound function (disabled)
-  const playNotificationSound = () => {
-    // Sound notifications have been disabled
-    return;
-  };
-    // Browser notification function (disabled)
-  const showBrowserNotification = (notifications: Notification[]) => {
-    // Browser notifications have been disabled
-    return;
-  };
-    // Notification permission function (disabled)
-  const requestNotificationPermission = async () => {
-    // Notification permissions have been disabled
-    return false;
-  };
 
-  // Legacy fetch method - keeping for compatibility but unused with SSE
-  const fetchNotifications = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await fetch("/api/notifications");
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch notifications");
-      }
-
-      const data = await response.json();
-
-      // Use notifications directly from the server
-      setNotifications(data.notifications || []);
-
-      // Total count is already calculated on the server
-      setTotalCount(data.total || 0);
-    } catch (error: any) {
-      console.error("Error fetching notifications:", error);
-      setError(error.message || "Failed to fetch notifications");
-    } finally {
-      setIsLoading(false);
-    }
-  };  const toggleDropdown = () => {
+  const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
   
@@ -289,29 +245,7 @@ export default function NotificationBell() {
       urgent: "ฉุกเฉิน",
     };
     return priorities[priority] || priority;
-  };  // Add animation keyframes for the bell
-  useEffect(() => {
-    // Add this to head if it doesn't exist already
-    if (!document.getElementById('notification-bell-animation')) {
-      const style = document.createElement('style');
-      style.id = 'notification-bell-animation';
-      style.innerHTML = `
-        @keyframes ring {
-          0% { transform: rotate(0); }
-          10% { transform: rotate(15deg); }
-          20% { transform: rotate(-15deg); }
-          30% { transform: rotate(15deg); }
-          40% { transform: rotate(-15deg); }
-          50% { transform: rotate(0); }
-          100% { transform: rotate(0); }
-        }
-        .animate-ring {
-          animation: ring 1s ease-in-out;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  }, []);
+  };  // The bell ring animation is defined in globals.css
 
   return (
     <div className="relative" ref={dropdownRef}>

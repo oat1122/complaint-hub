@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { playNotificationSound } from "@/lib/playNotificationSound";
 
 interface ComplaintDetailProps {
   complaint: any;
@@ -129,8 +128,6 @@ export default function ComplaintDetail({ complaint }: ComplaintDetailProps) {
 
       setCurrentStatus(newStatus);
       setShowNotification(true);
-      // Play notification sound when status is updated
-      playNotificationSound();
       router.refresh();
     } catch (error: any) {
       alert(`ข้อผิดพลาด: ${error.message || "ไม่สามารถอัปเดตสถานะได้"}`);
