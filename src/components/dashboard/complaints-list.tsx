@@ -81,67 +81,269 @@ export default function ComplaintsList({
   };
 
   const applyFilters = () => {
-    fetchComplaints(1);
+    // Use the current filters directly
+    const queryParams = new URLSearchParams({
+      page: "1",
+      limit: pagination.limit.toString(),
+    });
+    
+    // Add current filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) {
+        queryParams.append(key, value);
+      }
+    });
+    
+    // Set loading state
+    setIsLoading(true);
+    setError(null);
+    
+    // Fetch with current filters immediately
+    fetch(`/api/complaints?${queryParams.toString()}`)
+      .then(response => {
+        if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+        return response.json();
+      })
+      .then(data => {
+        setComplaints(data.complaints);
+        setPagination(data.pagination);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+        setIsLoading(false);
+      });
   };
 
   const resetFilters = () => {
-    setFilters({
+    // Set empty filters and fetch immediately
+    const newFilters = {
       category: "",
       priority: "",
       status: "",
       search: "",
       dateFrom: "",
       dateTo: "",
+    };
+    
+    setFilters(newFilters);
+    
+    // Use the empty filters directly
+    const queryParams = new URLSearchParams({
+      page: "1",
+      limit: pagination.limit.toString(),
     });
-    fetchComplaints(1);
+    
+    // Since all filters are empty, no filters will be added to the query
+    
+    // Set loading state
+    setIsLoading(true);
+    setError(null);
+    
+    // Fetch with empty filters immediately
+    fetch(`/api/complaints?${queryParams.toString()}`)
+      .then(response => {
+        if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+        return response.json();
+      })
+      .then(data => {
+        setComplaints(data.complaints);
+        setPagination(data.pagination);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+        setIsLoading(false);
+      });
   };
 
   // Date quick selection presets
   const setDateToday = () => {
     const today = new Date().toISOString().split("T")[0];
-    setFilters((prev) => ({
-      ...prev,
-      dateFrom: today,
-      dateTo: today,
-    }));
-    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+    // Update filters and then fetch with the updated values
+    setFilters((prev) => {
+      const newFilters = {
+        ...prev,
+        dateFrom: today,
+        dateTo: today,
+      };
+      
+      // Use the updated filters directly
+      const queryParams = new URLSearchParams({
+        page: "1",
+        limit: pagination.limit.toString(),
+      });
+      
+      // Add new filters
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value);
+        }
+      });
+      
+      // Fetch with the new filters immediately
+      setTimeout(() => {
+        fetch(`/api/complaints?${queryParams.toString()}`)
+          .then(response => {
+            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+            return response.json();
+          })
+          .then(data => {
+            setComplaints(data.complaints);
+            setPagination(data.pagination);
+            setIsLoading(false);
+          })
+          .catch(error => {
+            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+            setIsLoading(false);
+          });
+      }, 0);
+      
+      return newFilters;
+    });
   };
 
   const setDateYesterday = () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split("T")[0];
-    setFilters((prev) => ({
-      ...prev,
-      dateFrom: yesterdayStr,
-      dateTo: yesterdayStr,
-    }));
-    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+    
+    // Update filters and then fetch with the updated values
+    setFilters((prev) => {
+      const newFilters = {
+        ...prev,
+        dateFrom: yesterdayStr,
+        dateTo: yesterdayStr,
+      };
+      
+      // Use the updated filters directly
+      const queryParams = new URLSearchParams({
+        page: "1",
+        limit: pagination.limit.toString(),
+      });
+      
+      // Add new filters
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value);
+        }
+      });
+      
+      // Fetch with the new filters immediately
+      setTimeout(() => {
+        fetch(`/api/complaints?${queryParams.toString()}`)
+          .then(response => {
+            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+            return response.json();
+          })
+          .then(data => {
+            setComplaints(data.complaints);
+            setPagination(data.pagination);
+            setIsLoading(false);
+          })
+          .catch(error => {
+            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+            setIsLoading(false);
+          });
+      }, 0);
+      
+      return newFilters;
+    });
   };
 
   const setDateThisWeek = () => {
     const today = new Date();
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay() || today.getDate() - 6); // Adjust for week starting on Monday
-
-    setFilters((prev) => ({
-      ...prev,
-      dateFrom: startOfWeek.toISOString().split("T")[0],
-      dateTo: today.toISOString().split("T")[0],
-    }));
-    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+    
+    // Update filters and then fetch with the updated values
+    setFilters((prev) => {
+      const newFilters = {
+        ...prev,
+        dateFrom: startOfWeek.toISOString().split("T")[0],
+        dateTo: today.toISOString().split("T")[0],
+      };
+      
+      // Use the updated filters directly
+      const queryParams = new URLSearchParams({
+        page: "1",
+        limit: pagination.limit.toString(),
+      });
+      
+      // Add new filters
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value);
+        }
+      });
+      
+      // Fetch with the new filters immediately
+      setTimeout(() => {
+        fetch(`/api/complaints?${queryParams.toString()}`)
+          .then(response => {
+            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+            return response.json();
+          })
+          .then(data => {
+            setComplaints(data.complaints);
+            setPagination(data.pagination);
+            setIsLoading(false);
+          })
+          .catch(error => {
+            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+            setIsLoading(false);
+          });
+      }, 0);
+      
+      return newFilters;
+    });
   };
 
   const setDateThisMonth = () => {
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-    setFilters((prev) => ({
-      ...prev,
-      dateFrom: startOfMonth.toISOString().split("T")[0],
-      dateTo: today.toISOString().split("T")[0],
-    }));
-    setTimeout(() => fetchComplaints(1), 0); // Apply filters immediately
+    
+    // Update filters and then fetch with the updated values
+    setFilters((prev) => {
+      const newFilters = {
+        ...prev,
+        dateFrom: startOfMonth.toISOString().split("T")[0],
+        dateTo: today.toISOString().split("T")[0],
+      };
+      
+      // Use the updated filters directly
+      const queryParams = new URLSearchParams({
+        page: "1",
+        limit: pagination.limit.toString(),
+      });
+      
+      // Add new filters
+      Object.entries(newFilters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value);
+        }
+      });
+      
+      // Fetch with the new filters immediately
+      setTimeout(() => {
+        fetch(`/api/complaints?${queryParams.toString()}`)
+          .then(response => {
+            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+            return response.json();
+          })
+          .then(data => {
+            setComplaints(data.complaints);
+            setPagination(data.pagination);
+            setIsLoading(false);
+          })
+          .catch(error => {
+            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+            setIsLoading(false);
+          });
+      }, 0);
+      
+      return newFilters;
+    });
   };
 
   const handleDeleteComplaint = async (id: string) => {
