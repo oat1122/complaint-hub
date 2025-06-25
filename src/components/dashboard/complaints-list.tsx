@@ -79,127 +79,77 @@ export default function ComplaintsList({
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
+  
+  // Utility function to update filters and fetch data in one operation
+  const updateFiltersAndFetch = (newFilters: Partial<typeof filters>) => {
+    // Update the filters state with the new values
+    const updatedFilters = { ...filters, ...newFilters };
+    
+    // Update the state
+    setFilters(updatedFilters);
+    
+    // Immediately fetch using the new filters without waiting for state update
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  const applyFilters = () => {
-    // Use the current filters directly
-    const queryParams = new URLSearchParams({
-      page: "1",
-      limit: pagination.limit.toString(),
-    });
-    
-    // Add current filters
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        queryParams.append(key, value);
-      }
-    });
-    
-    // Set loading state
-    setIsLoading(true);
-    setError(null);
-    
-    // Fetch with current filters immediately
-    fetch(`/api/complaints?${queryParams.toString()}`)
-      .then(response => {
-        if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
-        return response.json();
-      })
-      .then(data => {
-        setComplaints(data.complaints);
-        setPagination(data.pagination);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
-        setIsLoading(false);
+      const queryParams = new URLSearchParams({
+        page: "1",
+        limit: pagination.limit.toString(),
       });
+
+      // Add filters directly from the updatedFilters object
+      Object.entries(updatedFilters).forEach(([key, value]) => {
+        if (value) {
+          queryParams.append(key, value);
+        }
+      });
+
+      // Make the fetch request immediately with the new parameters
+      fetch(`/api/complaints?${queryParams.toString()}`)
+        .then(response => {
+          if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
+          return response.json();
+        })
+        .then(data => {
+          setComplaints(data.complaints);
+          setPagination(data.pagination);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+          setIsLoading(false);
+        });
+    } catch (error: any) {
+      setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
+      setIsLoading(false);
+    }
+  };
+
+  // Apply current filters from the state
+  const applyFilters = () => {
+    fetchComplaints(1);
   };
 
   const resetFilters = () => {
-    // Set empty filters and fetch immediately
-    const newFilters = {
+    // Reset all filters to empty and fetch data in one operation
+    updateFiltersAndFetch({
       category: "",
       priority: "",
       status: "",
       search: "",
       dateFrom: "",
       dateTo: "",
-    };
-    
-    setFilters(newFilters);
-    
-    // Use the empty filters directly
-    const queryParams = new URLSearchParams({
-      page: "1",
-      limit: pagination.limit.toString(),
     });
-    
-    // Since all filters are empty, no filters will be added to the query
-    
-    // Set loading state
-    setIsLoading(true);
-    setError(null);
-    
-    // Fetch with empty filters immediately
-    fetch(`/api/complaints?${queryParams.toString()}`)
-      .then(response => {
-        if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
-        return response.json();
-      })
-      .then(data => {
-        setComplaints(data.complaints);
-        setPagination(data.pagination);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
-        setIsLoading(false);
-      });
   };
 
   // Date quick selection presets
   const setDateToday = () => {
     const today = new Date().toISOString().split("T")[0];
-    // Update filters and then fetch with the updated values
-    setFilters((prev) => {
-      const newFilters = {
-        ...prev,
-        dateFrom: today,
-        dateTo: today,
-      };
-      
-      // Use the updated filters directly
-      const queryParams = new URLSearchParams({
-        page: "1",
-        limit: pagination.limit.toString(),
-      });
-      
-      // Add new filters
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value) {
-          queryParams.append(key, value);
-        }
-      });
-      
-      // Fetch with the new filters immediately
-      setTimeout(() => {
-        fetch(`/api/complaints?${queryParams.toString()}`)
-          .then(response => {
-            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
-            return response.json();
-          })
-          .then(data => {
-            setComplaints(data.complaints);
-            setPagination(data.pagination);
-            setIsLoading(false);
-          })
-          .catch(error => {
-            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
-            setIsLoading(false);
-          });
-      }, 0);
-      
-      return newFilters;
+    // Update filters and fetch data in one operation
+    updateFiltersAndFetch({
+      dateFrom: today,
+      dateTo: today
     });
   };
 
@@ -208,46 +158,10 @@ export default function ComplaintsList({
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split("T")[0];
     
-    // Update filters and then fetch with the updated values
-    setFilters((prev) => {
-      const newFilters = {
-        ...prev,
-        dateFrom: yesterdayStr,
-        dateTo: yesterdayStr,
-      };
-      
-      // Use the updated filters directly
-      const queryParams = new URLSearchParams({
-        page: "1",
-        limit: pagination.limit.toString(),
-      });
-      
-      // Add new filters
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value) {
-          queryParams.append(key, value);
-        }
-      });
-      
-      // Fetch with the new filters immediately
-      setTimeout(() => {
-        fetch(`/api/complaints?${queryParams.toString()}`)
-          .then(response => {
-            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
-            return response.json();
-          })
-          .then(data => {
-            setComplaints(data.complaints);
-            setPagination(data.pagination);
-            setIsLoading(false);
-          })
-          .catch(error => {
-            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
-            setIsLoading(false);
-          });
-      }, 0);
-      
-      return newFilters;
+    // Update filters and fetch data in one operation
+    updateFiltersAndFetch({
+      dateFrom: yesterdayStr,
+      dateTo: yesterdayStr
     });
   };
 
@@ -256,46 +170,10 @@ export default function ComplaintsList({
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay() || today.getDate() - 6); // Adjust for week starting on Monday
     
-    // Update filters and then fetch with the updated values
-    setFilters((prev) => {
-      const newFilters = {
-        ...prev,
-        dateFrom: startOfWeek.toISOString().split("T")[0],
-        dateTo: today.toISOString().split("T")[0],
-      };
-      
-      // Use the updated filters directly
-      const queryParams = new URLSearchParams({
-        page: "1",
-        limit: pagination.limit.toString(),
-      });
-      
-      // Add new filters
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value) {
-          queryParams.append(key, value);
-        }
-      });
-      
-      // Fetch with the new filters immediately
-      setTimeout(() => {
-        fetch(`/api/complaints?${queryParams.toString()}`)
-          .then(response => {
-            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
-            return response.json();
-          })
-          .then(data => {
-            setComplaints(data.complaints);
-            setPagination(data.pagination);
-            setIsLoading(false);
-          })
-          .catch(error => {
-            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
-            setIsLoading(false);
-          });
-      }, 0);
-      
-      return newFilters;
+    // Update filters and fetch data in one operation
+    updateFiltersAndFetch({
+      dateFrom: startOfWeek.toISOString().split("T")[0],
+      dateTo: today.toISOString().split("T")[0]
     });
   };
 
@@ -303,46 +181,10 @@ export default function ComplaintsList({
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     
-    // Update filters and then fetch with the updated values
-    setFilters((prev) => {
-      const newFilters = {
-        ...prev,
-        dateFrom: startOfMonth.toISOString().split("T")[0],
-        dateTo: today.toISOString().split("T")[0],
-      };
-      
-      // Use the updated filters directly
-      const queryParams = new URLSearchParams({
-        page: "1",
-        limit: pagination.limit.toString(),
-      });
-      
-      // Add new filters
-      Object.entries(newFilters).forEach(([key, value]) => {
-        if (value) {
-          queryParams.append(key, value);
-        }
-      });
-      
-      // Fetch with the new filters immediately
-      setTimeout(() => {
-        fetch(`/api/complaints?${queryParams.toString()}`)
-          .then(response => {
-            if (!response.ok) throw new Error("ไม่สามารถดึงข้อมูลคำร้องเรียนได้");
-            return response.json();
-          })
-          .then(data => {
-            setComplaints(data.complaints);
-            setPagination(data.pagination);
-            setIsLoading(false);
-          })
-          .catch(error => {
-            setError(error.message || "เกิดข้อผิดพลาดในการดึงข้อมูลคำร้องเรียน");
-            setIsLoading(false);
-          });
-      }, 0);
-      
-      return newFilters;
+    // Update filters and fetch data in one operation
+    updateFiltersAndFetch({
+      dateFrom: startOfMonth.toISOString().split("T")[0],
+      dateTo: today.toISOString().split("T")[0]
     });
   };
 
@@ -711,9 +553,11 @@ export default function ComplaintsList({
         {/* Date quick selections */}
         <div className="mt-4 flex flex-wrap gap-2">
           <p className="text-xs text-gray-500 w-full mb-1">เลือกช่วงวันแบบรวดเร็ว:</p>
-          <button
+          <Button
             onClick={setDateToday}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
+            variant="outline"
+            size="sm"
+            className="text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
           >
             <svg 
               className="w-3 h-3 mr-1" 
@@ -728,10 +572,12 @@ export default function ComplaintsList({
               <path d="M18 11.5H6M18 7.5H6M18 15.5H6M6 19.5h12"></path>
             </svg>
             วันนี้
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={setDateYesterday}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
+            variant="outline"
+            size="sm"
+            className="text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
           >
             <svg 
               className="w-3 h-3 mr-1" 
@@ -746,10 +592,12 @@ export default function ComplaintsList({
               <path d="M13 5H9.5M13 9H6.5M13 13H6.5M13 17H6.5M17 5v12"></path>
             </svg>
             เมื่อวาน
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={setDateThisWeek}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
+            variant="outline"
+            size="sm"
+            className="text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
           >
             <svg 
               className="w-3 h-3 mr-1" 
@@ -767,10 +615,12 @@ export default function ComplaintsList({
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
             สัปดาห์นี้
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={setDateThisMonth}
-            className="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center"
+            variant="outline"
+            size="sm"
+            className="text-xs font-medium rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
           >
             <svg 
               className="w-3 h-3 mr-1" 
@@ -788,7 +638,7 @@ export default function ComplaintsList({
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
             เดือนนี้
-          </button>
+          </Button>
         </div>
         <div className="mt-6 flex flex-wrap gap-3 pt-4 border-t border-gray-100">
           <Button
