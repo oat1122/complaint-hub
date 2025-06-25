@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { securityMiddleware } from "@/middleware/security";
 
-export function middleware(request: NextRequest) {
-  // No middleware logic needed yet
+export async function middleware(request: NextRequest) {
+  // Apply security middleware first
+  const securityResponse = await securityMiddleware(request);
+  
+  // If security middleware returned an error response, return it
+  if (securityResponse.status !== 200) {
+    return securityResponse;
+  }
+  
   return NextResponse.next();
 }
 

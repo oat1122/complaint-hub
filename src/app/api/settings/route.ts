@@ -3,16 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/auth-options";
 import { prisma } from "@/lib/db/prisma";
 
-// Default settings since we don't have a settings table yet
-const DEFAULT_SETTINGS = {
-  itemsPerPage: 10,
-  autoArchiveDays: 90,
-  enableAutoArchive: false
-};
-
-// In-memory settings storage for now (until we can generate the prisma client)
-let currentSettings = { ...DEFAULT_SETTINGS };
-
 // GET /api/settings - Get current settings
 export async function GET() {
   try {
@@ -26,7 +16,24 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(currentSettings);
+    // Get settings from database
+    let settings = await prisma.settings.findUnique({
+      where: { id: "singleton" }
+    });
+
+    // Create default settings if not exists
+    if (!settings) {
+      settings = await prisma.settings.create({
+        data: {
+          id: "singleton",
+          itemsPerPage: 10,
+          autoArchiveDays: 90,
+          enableAutoArchive: false
+        }
+      });
+    }
+
+    return NextResponse.json(settings);
   } catch (error) {
     console.error("Error fetching settings:", error);
     return NextResponse.json(
@@ -63,14 +70,24 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Update settings in memory
-    currentSettings = {
-      itemsPerPage: data.itemsPerPage,
-      autoArchiveDays: data.autoArchiveDays,
-      enableAutoArchive: data.enableAutoArchive
-    };
+    // Update settings in database
+    const settings = await prisma.settings.upsert({
+      where: { id: "singleton" },
+      update: {
+        itemsPerPage: data.itemsPerPage,
+        autoArchiveDays: data.autoArchiveDays,
+        enableAutoArchive: data.enableAutoArchive,
+        lastUpdated: new Date()
+      },
+      create: {
+        id: "singleton",
+        itemsPerPage: data.itemsPerPage,
+        autoArchiveDays: data.autoArchiveDays,
+        enableAutoArchive: data.enableAutoArchive
+      }
+    });
 
-    return NextResponse.json(currentSettings);
+    return NextResponse.json(settings);
   } catch (error) {
     console.error("Error updating settings:", error);
     return NextResponse.json(
@@ -96,7 +113,12 @@ export async function POST(request: NextRequest) {
     const { action } = await request.json();
 
     if (action === "archiveOld") {
-      const daysToArchive = currentSettings.autoArchiveDays;
+      // Get settings from database
+      const settings = await prisma.settings.findUnique({
+        where: { id: "singleton" }
+      });
+      
+      const daysToArchive = settings?.autoArchiveDays || 90;
       
       // Calculate the date threshold
       const thresholdDate = new Date();
@@ -106,7 +128,7 @@ export async function POST(request: NextRequest) {
       const result = await prisma.complaint.updateMany({
         where: {
           createdAt: { lt: thresholdDate },
-          status: "new"
+          status: { in: ["new", "received", "discussing", "processing", "resolved"] }
         },
         data: {
           status: "archived"
