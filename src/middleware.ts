@@ -26,9 +26,16 @@ export default withAuth(
     }
 
     // Admin-only routes check
-    if (path.startsWith("/dashboard/settings") && 
-        request.nextauth.token?.role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+    if (path.startsWith("/dashboard/settings")) {
+      try {
+        const token = request.nextauth.token;
+        if (!token || token.role !== "admin") {
+          return NextResponse.redirect(new URL("/dashboard", request.url));
+        }
+      } catch (error) {
+        console.error("Auth validation error:", error);
+        return NextResponse.redirect(new URL("/auth/login", request.url));
+      }
     }
 
     // Continue to next middleware or route handler

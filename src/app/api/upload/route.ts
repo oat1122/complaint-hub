@@ -62,6 +62,10 @@ export async function POST(request: Request) {
 
     for (const file of files) {
       try {
+        // Use secure file validator before saving
+        const { validateFileSecurely } = await import('@/lib/security/file-validator');
+        await validateFileSecurely(file);
+        
         const savedFile = await saveFile(file);
 
         // Save file info to database
@@ -78,7 +82,12 @@ export async function POST(request: Request) {
 
         savedFiles.push(attachment);
       } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        // Use standardized error response
+        const { createErrorResponse } = await import('@/lib/api/response-formatter');
+        return NextResponse.json(
+          createErrorResponse(error.message, 'FILE_VALIDATION_ERROR'),
+          { status: 400 }
+        );
       }
     }
 

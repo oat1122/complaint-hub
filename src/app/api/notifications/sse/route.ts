@@ -16,25 +16,39 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id;
+    
+    // Import and use the connection manager
+    const { sseConnectionManager } = await import('@/lib/sse/connection-manager');
 
-    // Prepare SSE response
+    // Prepare SSE response with connection management
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
+        // Add this connection to the manager
+        sseConnectionManager.addConnection(userId, controller);
+        
         // Initial connection message
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'connection', status: 'connected' })}\n\n`));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+          type: 'connection', 
+          status: 'connected',
+          connectionCount: sseConnectionManager.getConnectionCount(userId)
+        })}\n\n`));
         
         // Load initial notifications
         const initialNotifications = await getActiveNotifications(userId);
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'initial', notifications: initialNotifications.notifications, total: initialNotifications.total })}\n\n`));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+          type: 'initial', 
+          notifications: initialNotifications.notifications, 
+          total: initialNotifications.total 
+        })}\n\n`));
         
-        // Set up interval to check for new notifications
-        const intervalId = setInterval(async () => {
+        // Check for new notifications periodically
+        const checkInterval = async () => {
           try {
             // Get latest notifications
             const latestNotifications = await getActiveNotifications(userId);
             
-            // Send the data only if there are unread notifications
+            // Send updates if there are notifications
             if (latestNotifications.total > 0) {
               controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
                 type: 'update', 
@@ -42,18 +56,22 @@ export async function GET(request: NextRequest) {
                 total: latestNotifications.total 
               })}\n\n`));
             }
-            
-            // Keep connection alive with heartbeat
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'heartbeat', timestamp: new Date().toISOString() })}\n\n`));
           } catch (error) {
-            console.error('SSE interval error:', error);
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'error', message: 'Internal server error' })}\n\n`));
+            console.error('SSE data fetch error:', error);
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+              type: 'error', 
+              message: 'Error fetching notifications' 
+            })}\n\n`));
           }
-        }, 15000); // Check every 15 seconds
+        };
         
-        // Clean up the interval when the client disconnects
+        // Schedule regular checks
+        const intervalId = setInterval(checkInterval, 15000);
+        
+        // Clean up when the connection is closed
         request.signal.addEventListener('abort', () => {
           clearInterval(intervalId);
+          sseConnectionManager.removeConnection(userId, controller);
         });
       }
     });
