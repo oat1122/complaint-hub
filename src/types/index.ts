@@ -38,6 +38,7 @@ export interface Complaint {
   createdAt: Date;
   attachments?: Attachment[];
   userNotifications?: UserNotification[];
+  user?: User; // Add user field for complaint detail page
 }
 
 export interface Attachment {

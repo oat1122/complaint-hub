@@ -14,8 +14,8 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  // Get complaint data
-  const { id } = params;
+  // Await params before using them (Next.js 15+ requirement)
+  const { id } = await params;
   const complaint = await prisma.complaint.findUnique({
     where: { id },
   });
@@ -38,8 +38,8 @@ export default async function ComplaintDetailPage({ params }: PageProps) {
   const session = await getServerSession(authOptions);
   const role = session?.user?.role;
 
-  // Get complaint with attachments
-  const { id } = params;
+  // Await params before using them (Next.js 15+ requirement)
+  const { id } = await params;
   const complaint = await prisma.complaint.findUnique({
     where: { id },
     include: {
@@ -75,7 +75,7 @@ export default async function ComplaintDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      <ComplaintDetail complaint={complaint} />
+      <ComplaintDetail complaint={complaint} isAdmin={role === "admin"} />
     </div>
   );
 }
