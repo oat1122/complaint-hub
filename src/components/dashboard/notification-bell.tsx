@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, Clock, CheckCircle2, X, AlertCircle, Wifi, WifiOff } from "lucide-react";
+import { 
+  HiBell, 
+  HiClock, 
+  HiCheckCircle, 
+  HiX, 
+  HiExclamationCircle,
+  HiWifi
+} from "react-icons/hi";
 import Link from "next/link";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
@@ -21,10 +28,23 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
+  const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const prevCountRef = useRef(0);
   const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Initialize SSE connection
   useEffect(() => {
@@ -248,173 +268,232 @@ export default function NotificationBell() {
   };  // The bell ring animation is defined in globals.css
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Notification Bell Button */}
-      <button
-        className={`p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 notification-bell ${
-          totalCount > 0 
-            ? 'text-blue-600' 
-            : 'text-gray-500 hover:text-gray-700'
-        }`}
-        onClick={toggleDropdown}
-        aria-label="การแจ้งเตือน"
-      >
-        <Bell className={`h-5 w-5 ${totalCount > 0 && !isOpen ? 'animate-bounce' : ''}`} />
-        {totalCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1 -translate-y-1">
-            {totalCount > 9 ? "9+" : totalCount}
-          </span>
-        )}
-      </button>
+    <>
+      {/* Mobile Overlay */}
+      {isMobile && isOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-[90]"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
       
-      {/* Notification Dropdown */}
-      {isOpen && (
-        <div className="origin-top-right absolute right-0 mt-2 w-80 md:w-96 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[100] border border-gray-200 overflow-hidden">
-          <div className="py-1">
+      <div className="relative" ref={dropdownRef}>
+        {/* Notification Bell Button */}
+        <button
+          className={`relative p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 notification-bell transition-colors ${
+            totalCount > 0 
+              ? 'text-blue-600' 
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+          onClick={toggleDropdown}
+          aria-label="การแจ้งเตือน"
+        >
+          <HiBell className={`h-5 w-5 ${totalCount > 0 && !isOpen ? 'animate-bounce' : ''}`} />
+          {totalCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transform animate-pulse">
+              {totalCount > 99 ? "99+" : totalCount}
+            </span>
+          )}
+          
+          {/* Connection Status Indicator */}
+          <span className={`absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white ${
+            connectionStatus === 'connected' 
+              ? 'bg-green-500' 
+              : connectionStatus === 'connecting'
+              ? 'bg-yellow-500 animate-pulse'
+              : 'bg-red-500'
+          }`}></span>
+        </button>
+        
+        {/* Notification Dropdown */}
+        {isOpen && (
+          <div className={`
+            ${isMobile 
+              ? 'fixed inset-x-4 top-20 bottom-20 z-[100] max-h-[calc(100vh-10rem)]' 
+              : 'absolute right-0 mt-2 w-80 md:w-96 z-[100]'
+            }
+            rounded-xl shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-200 overflow-hidden flex flex-col
+          `}>
             {/* Dropdown Header */}
-            <div className="px-4 py-2 border-b border-gray-200">
+            <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-medium text-gray-900">
+                  <HiBell className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-base font-semibold text-gray-900">
                     การแจ้งเตือน
                   </h3>
                   
-                  {/* Connection Status Indicator */}
-                  <span className={`inline-flex h-2 w-2 rounded-full ${
-                    connectionStatus === 'connected' 
-                      ? 'bg-green-500' 
-                      : connectionStatus === 'connecting'
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  }`}></span>
+                  {/* Connection Status */}
+                  <div className="flex items-center gap-1">
+                    <span className={`inline-flex h-2 w-2 rounded-full ${
+                      connectionStatus === 'connected' 
+                        ? 'bg-green-500' 
+                        : connectionStatus === 'connecting'
+                        ? 'bg-yellow-500 animate-pulse'
+                        : 'bg-red-500'
+                    }`}></span>
+                    <span className="text-xs text-gray-500">
+                      {connectionStatus === 'connected' && 'เชื่อมต่อแล้ว'}
+                      {connectionStatus === 'connecting' && 'กำลังเชื่อมต่อ...'}
+                      {connectionStatus === 'disconnected' && 'ไม่ได้เชื่อมต่อ'}
+                    </span>
+                  </div>
                 </div>
                 
-                {totalCount > 0 && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                    {totalCount} รายการ
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {totalCount > 0 && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {totalCount} รายการ
+                    </span>
+                  )}
+                  
+                  {isMobile && (
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className="p-1 rounded-full hover:bg-gray-200 text-gray-500"
+                    >
+                      <HiX className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
             
-            {/* Loading State */}
-            {isLoading ? (
-              <div className="px-4 py-3 text-center text-sm text-gray-500">
-                <div className="inline-block h-4 w-4 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin mr-1"></div>
-                กำลังโหลด...
-              </div>
-            ) : error ? (
-              <div className="px-4 py-3 text-center text-sm text-red-500">
-                {error}
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="px-4 py-3 text-center text-sm text-gray-500">
-                ไม่มีการแจ้งเตือนใหม่
-              </div>
-            ) : (
-              <>
-                {/* Notification Items */}
-                {notifications.map((notification) => (
-                  <div
-                    key={notification.id}
-                    className={`block px-4 py-3 hover:bg-gray-50 transition-colors duration-150 border-b border-gray-100 relative ${
-                      !notification.isRead
-                        ? "bg-blue-50 notification-highlight"
-                        : ""
-                    }`}
-                  >
-                    <Link
-                      href={`/dashboard/complaints/${
-                        notification.complaintId || notification.id
-                      }`}
-                      className="block"
-                      onClick={() => {
-                        // Mark this notification as read on the server
-                        fetch("/api/notifications", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            action: "markAsRead",
-                            id: notification.id,
-                          }),
-                        });
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Loading State */}
+              {isLoading ? (
+                <div className="px-4 py-6 text-center text-sm text-gray-500">
+                  <div className="inline-block h-6 w-6 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin mr-2"></div>
+                  กำลังโหลด...
+                </div>
+              ) : error ? (
+                <div className="px-4 py-6 text-center text-sm text-red-500 flex flex-col items-center">
+                  <HiExclamationCircle className="h-8 w-8 mb-2" />
+                  {error}
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-gray-500 flex flex-col items-center">
+                  <HiBell className="h-8 w-8 mb-2 text-gray-300" />
+                  <p>ไม่มีการแจ้งเตือนใหม่</p>
+                  <p className="text-xs mt-1">เมื่อมีการอัปเดตจะแสดงที่นี่</p>
+                </div>
+              ) : (
+                <>
+                  {/* Notification Items */}
+                  <div className="divide-y divide-gray-100">
+                    {notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`relative hover:bg-gray-50 transition-colors duration-150 ${
+                          !notification.isRead
+                            ? "bg-blue-50 border-l-4 border-blue-500"
+                            : ""
+                        }`}
+                      >
+                        <Link
+                          href={`/dashboard/complaints/${
+                            notification.complaintId || notification.id
+                          }`}
+                          className="block px-4 py-4 pr-12"
+                          onClick={() => {
+                            // Mark this notification as read on the server
+                            fetch("/api/notifications", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                action: "markAsRead",
+                                id: notification.id,
+                              }),
+                            });
 
-                        // Close dropdown
-                        setIsOpen(false);
-                      }}
-                    >
-                      <div className="flex items-start pr-6">
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`text-sm font-medium truncate mb-1 ${
-                              !notification.isRead
-                                ? "text-blue-600 font-semibold"
-                                : "text-gray-900"
-                            }`}
-                          >
-                            {notification.subject}
-                            {!notification.isRead && (
-                              <span className="ml-2 inline-block w-2 h-2 rounded-full bg-blue-500"></span>
-                            )}
-                          </p>
-                          <div className="flex items-center text-xs text-gray-500">
-                            <span className="mr-2">
-                              #{notification.trackingNumber}
-                            </span>
-                            <span className="mr-2">•</span>
-                            <div className="flex items-center">
-                              <Clock className="h-3 w-3 mr-1" />
-                              <span>{formatDate(notification.createdAt)}</span>
+                            // Close dropdown
+                            setIsOpen(false);
+                          }}
+                        >
+                          <div className="flex items-start space-x-3">
+                            {/* Notification Icon */}
+                            <div className={`flex-shrink-0 mt-1 ${
+                              !notification.isRead ? 'text-blue-600' : 'text-gray-400'
+                            }`}>
+                              <HiBell className="h-5 w-5" />
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm font-medium mb-1 ${
+                                !notification.isRead
+                                  ? "text-blue-900 font-semibold"
+                                  : "text-gray-900"
+                              }`}>
+                                {notification.subject}
+                                {!notification.isRead && (
+                                  <span className="ml-2 inline-block w-2 h-2 rounded-full bg-blue-500"></span>
+                                )}
+                              </p>
+                              
+                              {/* Meta Info */}
+                              <div className="flex flex-col sm:flex-row sm:items-center text-xs text-gray-500 space-y-1 sm:space-y-0 sm:space-x-3">
+                                <span className="flex items-center">
+                                  <span className="font-mono">#{notification.trackingNumber}</span>
+                                </span>
+                                <span className="flex items-center">
+                                  <HiClock className="h-3 w-3 mr-1" />
+                                  {formatDate(notification.createdAt)}
+                                </span>
+                                <span
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getPriorityClass(
+                                    notification.priority
+                                  )}`}
+                                >
+                                  {getPriorityText(notification.priority)}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ml-2 whitespace-nowrap ${getPriorityClass(
-                            notification.priority
-                          )}`}
+                        </Link>
+                        
+                        {/* Delete Button */}
+                        <button
+                          className="absolute top-3 right-3 text-gray-400 hover:text-red-600 p-1.5 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                          onClick={(e) => deleteNotification(notification.id, e)}
+                          aria-label="ลบการแจ้งเตือน"
                         >
-                          {getPriorityText(notification.priority)}
-                        </span>
+                          <HiX className="h-4 w-4" />
+                        </button>
                       </div>
-                    </Link>
-                    
-                    {/* Delete Button */}
-                    <button
-                      className="absolute top-3 right-3 text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      onClick={(e) => deleteNotification(notification.id, e)}
-                      aria-label="ลบการแจ้งเตือน"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
+                    ))}
                   </div>
-                ))}
-                
-                {/* Footer Actions */}
-                <div className="bg-gray-50 px-4 py-3 flex justify-between">
+                </>
+              )}
+            </div>
+            
+            {/* Footer Actions */}
+            {notifications.length > 0 && (
+              <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                   <Link
                     href="/dashboard/complaints"
-                    className="text-sm text-blue-600 hover:text-blue-800"
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
                     onClick={() => setIsOpen(false)}
                   >
-                    ดูทั้งหมด
+                    <HiBell className="h-4 w-4" />
+                    ดูทั้งหมด ({notifications.length})
                   </Link>
 
-                  <div className="flex gap-3">
-                    <button
-                      onClick={markAsRead}
-                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
-                    >
-                      <CheckCircle2 className="h-4 w-4" />
-                      อ่านทั้งหมดแล้ว
-                    </button>
-                      {/* Browser Notification Permission Button - Removed */}
-                  </div>
+                  <button
+                    onClick={markAsRead}
+                    className="text-sm text-gray-600 hover:text-gray-800 font-medium flex items-center gap-1 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                  >
+                    <HiCheckCircle className="h-4 w-4" />
+                    อ่านทั้งหมดแล้ว
+                  </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
-        </div>
-      )}
+        )}
       </div>
+    </>
   );
 }
