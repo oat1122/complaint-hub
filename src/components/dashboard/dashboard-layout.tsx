@@ -308,17 +308,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           {/* Right Side */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ml-auto">
             {!isAdmin && (
               <div className="hidden sm:flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
                 <HiEye className="w-4 h-4 mr-1" />
                 โหมดดูอย่างเดียว
               </div>
             )}
-
-            <div className="relative">
-              <NotificationBell />
-            </div>
 
             {/* Mobile User Menu */}
             <div className="lg:hidden">
@@ -328,6 +324,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               >
                 <HiLogout className="w-5 h-5" />
               </button>
+            </div>
+
+            {/* Notification Bell - Desktop/Tablet */}
+            <div className="relative">
+              <NotificationBell />
             </div>
           </div>
         </header>
